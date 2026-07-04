@@ -17,10 +17,12 @@ export const metadata: Metadata = {
   title: "판매관리시스템",
   description: "매입등록/매출등록, 매입가·판매가·마진율 관리",
   manifest: "/manifest.json",
-  icons: { icon: "/icons/icon.svg", apple: "/icons/icon.svg" },
+  icons: { icon: "/icons/icon-192.png", apple: "/icons/icon-192.png" },
 };
 
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
   themeColor: "#111111",
 };
 

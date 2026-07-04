@@ -1,5 +1,5 @@
-const CACHE_NAME = "inventory-app-v1";
-const OFFLINE_URLS = ["/manifest.json", "/icons/icon.svg"];
+const CACHE_NAME = "inventory-app-v2";
+const OFFLINE_URLS = ["/manifest.json", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
