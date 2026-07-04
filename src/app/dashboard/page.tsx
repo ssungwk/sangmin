@@ -1,71 +1,66 @@
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/lib/actions/auth";
-import { NewProductForm, StockInForm, StockOutForm } from "./forms";
+import { PurchaseForm, SaleForm } from "./forms";
+
+function formatSpec(width: number, height: number, thickness: number) {
+  return `${width}*${height}*${thickness}T`;
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  const [{ data: products }, { data: recentOut }] = await Promise.all([
-    supabase.from("products").select("*").order("name"),
+  const [{ data: purchases }, { data: sales }] = await Promise.all([
     supabase
-      .from("stock_out_with_margin")
+      .from("purchases")
       .select("*")
-      .order("created_at", { ascending: false })
+      .order("in_date", { ascending: false })
+      .limit(20),
+    supabase
+      .from("sales")
+      .select("*")
+      .order("order_date", { ascending: false })
       .limit(20),
   ]);
-
-  const productList = products ?? [];
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">재고 관리 대시보드</h1>
+        <h1 className="text-2xl font-bold">매입/매출 관리</h1>
         <form action={signOut}>
           <button className="text-sm text-gray-500 underline">로그아웃</button>
         </form>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <NewProductForm />
-        <StockInForm products={productList} />
-        <StockOutForm products={productList} />
+      <div className="grid gap-4 md:grid-cols-2">
+        <PurchaseForm />
+        <SaleForm />
       </div>
 
       <section>
-        <h2 className="mb-2 text-lg font-semibold">상품 현황</h2>
+        <h2 className="mb-2 text-lg font-semibold">최근 매입 내역</h2>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b bg-gray-50 text-left">
-                <th className="p-2">상품명</th>
-                <th className="p-2">SKU</th>
-                <th className="p-2">매입가</th>
-                <th className="p-2">판매가</th>
-                <th className="p-2">재고수량</th>
-                <th className="p-2">마진율</th>
+                <th className="p-2">매입일자</th>
+                <th className="p-2">규격</th>
+                <th className="p-2">매입단가</th>
               </tr>
             </thead>
             <tbody>
-              {productList.map((p) => {
-                const margin =
-                  p.sale_price > 0
-                    ? (((p.sale_price - p.purchase_price) / p.sale_price) * 100).toFixed(1)
-                    : "-";
-                return (
-                  <tr key={p.id} className="border-b">
-                    <td className="p-2">{p.name}</td>
-                    <td className="p-2">{p.sku ?? "-"}</td>
-                    <td className="p-2">{p.purchase_price.toLocaleString()}</td>
-                    <td className="p-2">{p.sale_price.toLocaleString()}</td>
-                    <td className="p-2">{p.stock_quantity}</td>
-                    <td className="p-2">{margin === "-" ? "-" : `${margin}%`}</td>
-                  </tr>
-                );
-              })}
-              {productList.length === 0 && (
+              {(purchases ?? []).map((row) => (
+                <tr key={row.in_id} className="border-b">
+                  <td className="p-2">{row.in_date}</td>
+                  <td className="p-2">
+                    {formatSpec(row.width_mm, row.height_mm, row.thickness_mm)}
+                  </td>
+                  <td className="p-2">{Number(row.in_prc).toLocaleString()}</td>
+                </tr>
+              ))}
+              {(purchases ?? []).length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-4 text-center text-gray-400">
-                    등록된 상품이 없습니다.
+                  <td colSpan={3} className="p-4 text-center text-gray-400">
+                    매입 내역이 없습니다.
                   </td>
                 </tr>
               )}
@@ -75,38 +70,34 @@ export default async function DashboardPage() {
       </section>
 
       <section>
-        <h2 className="mb-2 text-lg font-semibold">최근 출고 내역</h2>
+        <h2 className="mb-2 text-lg font-semibold">최근 매출 내역</h2>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b bg-gray-50 text-left">
-                <th className="p-2">일시</th>
-                <th className="p-2">상품명</th>
-                <th className="p-2">수량</th>
-                <th className="p-2">판매단가</th>
-                <th className="p-2">마진율</th>
+                <th className="p-2">주문일자</th>
+                <th className="p-2">배송일자</th>
+                <th className="p-2">현장</th>
+                <th className="p-2">규격</th>
+                <th className="p-2">매출단가</th>
               </tr>
             </thead>
             <tbody>
-              {(recentOut ?? []).map((row) => (
-                <tr key={row.id} className="border-b">
+              {(sales ?? []).map((row) => (
+                <tr key={row.out_id} className="border-b">
+                  <td className="p-2">{row.order_date}</td>
+                  <td className="p-2">{row.out_date ?? "-"}</td>
+                  <td className="p-2">{row.apartment ?? "-"}</td>
                   <td className="p-2">
-                    {new Date(row.created_at).toLocaleString("ko-KR")}
+                    {formatSpec(row.width_mm, row.height_mm, row.thickness_mm)}
                   </td>
-                  <td className="p-2">{row.product_name}</td>
-                  <td className="p-2">{row.quantity}</td>
-                  <td className="p-2">{row.sale_price.toLocaleString()}</td>
-                  <td className="p-2">
-                    {row.margin_rate_percent === null
-                      ? "-"
-                      : `${row.margin_rate_percent}%`}
-                  </td>
+                  <td className="p-2">{Number(row.out_prc).toLocaleString()}</td>
                 </tr>
               ))}
-              {(recentOut ?? []).length === 0 && (
+              {(sales ?? []).length === 0 && (
                 <tr>
                   <td colSpan={5} className="p-4 text-center text-gray-400">
-                    출고 내역이 없습니다.
+                    매출 내역이 없습니다.
                   </td>
                 </tr>
               )}
