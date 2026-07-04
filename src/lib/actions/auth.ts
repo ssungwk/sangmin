@@ -25,7 +25,7 @@ export async function signUp(_prevState: unknown, formData: FormData) {
   const name = formData.get("name") as string;
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: { data: { name } },
@@ -33,6 +33,12 @@ export async function signUp(_prevState: unknown, formData: FormData) {
 
   if (error) {
     return { error: error.message };
+  }
+
+  // 이미 가입(인증 완료)된 이메일이면 이메일 열거 방지를 위해 에러 없이 성공처럼 응답하고
+  // 메일도 보내지 않음 — identities가 빈 배열인 것으로 이 경우를 구분할 수 있음
+  if (data.user && data.user.identities?.length === 0) {
+    return { error: "이미 가입된 이메일입니다. 로그인해주세요." };
   }
 
   return { success: "가입 확인 이메일을 발송했습니다. 메일함을 확인해주세요." };
