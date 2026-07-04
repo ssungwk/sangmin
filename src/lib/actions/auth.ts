@@ -2,7 +2,15 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+
+async function getOrigin() {
+  const h = await headers();
+  const host = h.get("host");
+  const protocol = h.get("x-forwarded-proto") ?? "http";
+  return `${protocol}://${host}`;
+}
 
 export async function signIn(_prevState: unknown, formData: FormData) {
   const email = formData.get("email") as string;
@@ -24,11 +32,15 @@ export async function signUp(_prevState: unknown, formData: FormData) {
   const password = formData.get("password") as string;
   const name = formData.get("name") as string;
 
+  const origin = await getOrigin();
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { name } },
+    options: {
+      data: { name },
+      emailRedirectTo: `${origin}/auth/callback`,
+    },
   });
 
   if (error) {
