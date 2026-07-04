@@ -22,7 +22,9 @@
 
 3. Supabase 프로젝트의 SQL Editor에서 `supabase/schema.sql` 실행 (테이블/트리거/RLS 정책 생성)
 
-4. 개발 서버 실행
+4. (선택) 회원가입 승인 알림 메일을 보내려면 [resend.com](https://resend.com)에서 무료 API Key 발급 후 `.env.local`의 `RESEND_API_KEY`에 입력. 미설정 시 승인 자체는 정상 동작하고 메일만 생략됩니다.
+
+5. 개발 서버 실행
 
    ```bash
    npm run dev

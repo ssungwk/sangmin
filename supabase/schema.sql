@@ -6,8 +6,15 @@ create table if not exists users (
   user_id uuid primary key references auth.users(id) on delete cascade,
   user_nm text not null,
   admin_yn char(1) not null default '0' check (admin_yn in ('0', '1')),
+  approved_yn char(1) not null default '0' check (approved_yn in ('0', '1')),
   created_at timestamptz not null default now()
 );
+
+-- 기존에 만든 프로젝트라면 approved_yn 컬럼이 없을 수 있으므로 추가.
+-- 이미 가입되어 있던 사용자는 '1'(승인됨)로 채워 넣어 갑자기 잠기지 않게 하고,
+-- 그 다음부터의 신규 가입 기본값만 '0'(대기)으로 바꿔서 적용.
+alter table users add column if not exists approved_yn char(1) not null default '1' check (approved_yn in ('0', '1'));
+alter table users alter column approved_yn set default '0';
 
 -- 회원가입(auth.users insert) 시 users 테이블에도 자동으로 프로필 행 생성
 create or replace function handle_new_user()
@@ -59,6 +66,13 @@ drop policy if exists "authenticated read users" on users;
 create policy "authenticated read users" on users
   for select to authenticated using (true);
 
+-- 관리자(admin_yn='1')만 다른 사용자의 승인상태/관리자여부 변경 가능
+drop policy if exists "admin update users" on users;
+create policy "admin update users" on users
+  for update to authenticated
+  using (exists (select 1 from users me where me.user_id = auth.uid() and me.admin_yn = '1'))
+  with check (exists (select 1 from users me where me.user_id = auth.uid() and me.admin_yn = '1'));
+
 drop policy if exists "authenticated read purchases" on purchases;
 create policy "authenticated read purchases" on purchases
   for select to authenticated using (true);
@@ -91,3 +105,28 @@ returns sales as $$
   order by power(width_mm - w, 2) + power(height_mm - h, 2) + power(thickness_mm - t, 2) asc
   limit 1;
 $$ language sql stable;
+
+-- 사용자관리 화면용: 이메일(auth.users)까지 합쳐서 전체 사용자 목록 조회.
+-- 클라이언트 role은 auth.users를 직접 조회할 권한이 없어서 security definer로 우회하고,
+-- 함수 내부에서 호출자가 관리자인지 다시 확인해 관리자가 아니면 빈 목록을 반환.
+create or replace function list_users()
+returns table (
+  user_id uuid,
+  user_nm text,
+  admin_yn char(1),
+  approved_yn char(1),
+  email text,
+  created_at timestamptz
+)
+security definer
+set search_path = public
+language sql
+as $$
+  select u.user_id, u.user_nm, u.admin_yn, u.approved_yn, a.email, u.created_at
+  from public.users u
+  join auth.users a on a.id = u.user_id
+  where exists (
+    select 1 from public.users me where me.user_id = auth.uid() and me.admin_yn = '1'
+  )
+  order by u.created_at desc;
+$$;
