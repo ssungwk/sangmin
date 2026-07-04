@@ -74,3 +74,20 @@ create policy "authenticated read sales" on sales
 drop policy if exists "authenticated insert sales" on sales;
 create policy "authenticated insert sales" on sales
   for insert to authenticated with check (out_user_id = auth.uid());
+
+-- 규격(가로/세로/두께)이 가장 비슷한 매입/매출 1건 조회 (유클리드 거리 기준, 없으면 null)
+create or replace function nearest_purchase(w numeric, h numeric, t numeric)
+returns purchases as $$
+  select *
+  from purchases
+  order by power(width_mm - w, 2) + power(height_mm - h, 2) + power(thickness_mm - t, 2) asc
+  limit 1;
+$$ language sql stable;
+
+create or replace function nearest_sale(w numeric, h numeric, t numeric)
+returns sales as $$
+  select *
+  from sales
+  order by power(width_mm - w, 2) + power(height_mm - h, 2) + power(thickness_mm - t, 2) asc
+  limit 1;
+$$ language sql stable;

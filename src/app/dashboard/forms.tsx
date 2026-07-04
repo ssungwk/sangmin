@@ -1,7 +1,9 @@
 "use client";
 
-import { useActionState, useRef, useEffect } from "react";
+import { useActionState, useRef, useEffect, useState } from "react";
 import { registerPurchase, registerSale } from "@/lib/actions/inventory";
+import { findNearestSpec, type NearestPurchase, type NearestSale } from "@/lib/actions/lookup";
+import { formatSpec } from "@/lib/format";
 
 function StatusMessage({
   state,
@@ -122,9 +124,51 @@ export function SaleForm() {
   const [state, formAction, pending] = useActionState(registerSale, undefined);
   const formRef = useRef<HTMLFormElement>(null);
 
+  const [width, setWidth] = useState("");
+  const [height, setHeight] = useState("");
+  const [thickness, setThickness] = useState("");
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [lookup, setLookup] = useState<{
+    purchase: NearestPurchase | null;
+    sale: NearestSale | null;
+  } | null>(null);
+
   useEffect(() => {
-    if (state?.success) formRef.current?.reset();
+    if (state?.success) {
+      formRef.current?.reset();
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clears controlled spec fields once per successful submit result, not on every render
+      setWidth("");
+      setHeight("");
+      setThickness("");
+      setLookup(null);
+    }
   }, [state]);
+
+  const w = Number(width);
+  const h = Number(height);
+  const t = Number(thickness);
+  const specComplete = width !== "" && height !== "" && thickness !== "" && w > 0 && h > 0 && t > 0;
+
+  useEffect(() => {
+    if (!specComplete) return;
+
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flips loading flag before the debounced lookup fires; guarded by `cancelled` on cleanup
+    setLookupLoading(true);
+    const timer = setTimeout(() => {
+      findNearestSpec(w, h, t).then((result) => {
+        if (!cancelled) {
+          setLookup(result);
+          setLookupLoading(false);
+        }
+      });
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [specComplete, w, h, t]);
 
   return (
     <form
@@ -172,6 +216,8 @@ export function SaleForm() {
                   step="0.01"
                   placeholder="가로(mm)"
                   required
+                  value={width}
+                  onChange={(e) => setWidth(e.target.value)}
                   className={inputClass}
                 />
                 <input
@@ -180,6 +226,8 @@ export function SaleForm() {
                   step="0.01"
                   placeholder="세로(mm)"
                   required
+                  value={height}
+                  onChange={(e) => setHeight(e.target.value)}
                   className={inputClass}
                 />
                 <input
@@ -188,6 +236,8 @@ export function SaleForm() {
                   step="0.01"
                   placeholder="두께(mm)"
                   required
+                  value={thickness}
+                  onChange={(e) => setThickness(e.target.value)}
                   className={inputClass}
                 />
               </div>
@@ -208,6 +258,58 @@ export function SaleForm() {
           </tr>
         </tbody>
       </table>
+
+      {specComplete && (lookupLoading || lookup) && (
+        <div className="border-t border-slate-200 bg-slate-50 p-4 text-sm">
+          <p className="mb-2 font-medium text-slate-600">
+            참고: 입력 규격과 가장 비슷한 이전 내역
+          </p>
+          {lookupLoading ? (
+            <p className="text-slate-400">조회 중...</p>
+          ) : (
+            <div className="space-y-1 text-slate-700">
+              <p>
+                매입단가:{" "}
+                {lookup?.purchase ? (
+                  <>
+                    <span className="font-medium">
+                      {Number(lookup.purchase.in_prc).toLocaleString()}원
+                    </span>{" "}
+                    ({lookup.purchase.in_date},{" "}
+                    {formatSpec(
+                      lookup.purchase.width_mm,
+                      lookup.purchase.height_mm,
+                      lookup.purchase.thickness_mm,
+                    )}
+                    )
+                  </>
+                ) : (
+                  "매입 내역 없음"
+                )}
+              </p>
+              <p>
+                매출단가:{" "}
+                {lookup?.sale ? (
+                  <>
+                    <span className="font-medium">
+                      {Number(lookup.sale.out_prc).toLocaleString()}원
+                    </span>{" "}
+                    ({lookup.sale.order_date},{" "}
+                    {formatSpec(
+                      lookup.sale.width_mm,
+                      lookup.sale.height_mm,
+                      lookup.sale.thickness_mm,
+                    )}
+                    )
+                  </>
+                ) : (
+                  "매출 내역 없음"
+                )}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex items-center gap-3 p-4">
         <button

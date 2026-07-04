@@ -1,0 +1,33 @@
+"use server";
+
+import { createClient } from "@/lib/supabase/server";
+
+export type NearestPurchase = {
+  in_date: string;
+  width_mm: number;
+  height_mm: number;
+  thickness_mm: number;
+  in_prc: number;
+};
+
+export type NearestSale = {
+  order_date: string;
+  width_mm: number;
+  height_mm: number;
+  thickness_mm: number;
+  out_prc: number;
+};
+
+export async function findNearestSpec(width: number, height: number, thickness: number) {
+  const supabase = await createClient();
+
+  const [{ data: purchase }, { data: sale }] = await Promise.all([
+    supabase.rpc("nearest_purchase", { w: width, h: height, t: thickness }),
+    supabase.rpc("nearest_sale", { w: width, h: height, t: thickness }),
+  ]);
+
+  return {
+    purchase: purchase as NearestPurchase | null,
+    sale: sale as NearestSale | null,
+  };
+}
