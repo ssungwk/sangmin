@@ -9,11 +9,14 @@ function StatusMessage({
   state: { error?: string; success?: string } | undefined;
 }) {
   if (!state) return null;
-  if (state.error) return <p className="text-sm text-red-600">{state.error}</p>;
+  if (state.error) return <p className="text-sm text-red-700">{state.error}</p>;
   if (state.success)
-    return <p className="text-sm text-green-600">{state.success}</p>;
+    return <p className="text-sm text-blue-700">{state.success}</p>;
   return null;
 }
+
+const inputClass =
+  "w-full rounded-none border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-800 outline-none focus:border-blue-700 focus:ring-1 focus:ring-blue-700";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -29,15 +32,17 @@ export function PurchaseForm() {
     <form
       ref={formRef}
       action={formAction}
-      className="space-y-2 rounded border p-4"
+      className="space-y-2 border border-slate-300 bg-white p-4"
     >
-      <h2 className="font-medium">매입 등록</h2>
+      <h2 className="border-b border-slate-200 pb-2 text-sm font-bold text-slate-700">
+        매입 등록
+      </h2>
       <input
         name="in_date"
         type="date"
         required
         defaultValue={today()}
-        className="w-full rounded border px-2 py-1"
+        className={inputClass}
       />
       <div className="flex gap-2">
         <input
@@ -46,7 +51,7 @@ export function PurchaseForm() {
           step="0.01"
           placeholder="가로(mm)"
           required
-          className="w-full rounded border px-2 py-1"
+          className={inputClass}
         />
         <input
           name="height_mm"
@@ -54,7 +59,7 @@ export function PurchaseForm() {
           step="0.01"
           placeholder="세로(mm)"
           required
-          className="w-full rounded border px-2 py-1"
+          className={inputClass}
         />
         <input
           name="thickness_mm"
@@ -62,7 +67,7 @@ export function PurchaseForm() {
           step="0.01"
           placeholder="두께(mm)"
           required
-          className="w-full rounded border px-2 py-1"
+          className={inputClass}
         />
       </div>
       <input
@@ -71,12 +76,12 @@ export function PurchaseForm() {
         step="0.01"
         placeholder="매입단가(원)"
         required
-        className="w-full rounded border px-2 py-1"
+        className={inputClass}
       />
       <button
         type="submit"
         disabled={pending}
-        className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white disabled:opacity-50"
+        className="rounded-none bg-blue-800 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-900 disabled:opacity-50"
       >
         {pending ? "처리 중..." : "매입 등록"}
       </button>
@@ -97,29 +102,22 @@ export function SaleForm() {
     <form
       ref={formRef}
       action={formAction}
-      className="space-y-2 rounded border p-4"
+      className="space-y-2 border border-slate-300 bg-white p-4"
     >
-      <h2 className="font-medium">매출 등록</h2>
+      <h2 className="border-b border-slate-200 pb-2 text-sm font-bold text-slate-700">
+        매출 등록
+      </h2>
       <div className="flex gap-2">
         <input
           name="order_date"
           type="date"
           required
           defaultValue={today()}
-          className="w-full rounded border px-2 py-1"
+          className={inputClass}
         />
-        <input
-          name="out_date"
-          type="date"
-          placeholder="배송일자"
-          className="w-full rounded border px-2 py-1"
-        />
+        <input name="out_date" type="date" placeholder="배송일자" className={inputClass} />
       </div>
-      <input
-        name="apartment"
-        placeholder="현장(아파트)"
-        className="w-full rounded border px-2 py-1"
-      />
+      <input name="apartment" placeholder="현장(아파트)" className={inputClass} />
       <div className="flex gap-2">
         <input
           name="width_mm"
@@ -127,7 +125,7 @@ export function SaleForm() {
           step="0.01"
           placeholder="가로(mm)"
           required
-          className="w-full rounded border px-2 py-1"
+          className={inputClass}
         />
         <input
           name="height_mm"
@@ -135,7 +133,7 @@ export function SaleForm() {
           step="0.01"
           placeholder="세로(mm)"
           required
-          className="w-full rounded border px-2 py-1"
+          className={inputClass}
         />
         <input
           name="thickness_mm"
@@ -143,7 +141,7 @@ export function SaleForm() {
           step="0.01"
           placeholder="두께(mm)"
           required
-          className="w-full rounded border px-2 py-1"
+          className={inputClass}
         />
       </div>
       <input
@@ -152,12 +150,12 @@ export function SaleForm() {
         step="0.01"
         placeholder="매출단가(원)"
         required
-        className="w-full rounded border px-2 py-1"
+        className={inputClass}
       />
       <button
         type="submit"
         disabled={pending}
-        className="rounded bg-orange-600 px-3 py-1.5 text-sm text-white disabled:opacity-50"
+        className="rounded-none bg-slate-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
       >
         {pending ? "처리 중..." : "매출 등록"}
       </button>

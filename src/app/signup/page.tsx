@@ -8,29 +8,17 @@ export default function SignupPage() {
   const [state, formAction, pending] = useActionState(signUp, undefined);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 dark:bg-black">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 flex flex-col items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-900 text-lg font-bold text-white dark:bg-white dark:text-zinc-900">
-            재
-          </div>
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
+      <div className="w-full max-w-sm border border-slate-300 bg-white shadow-sm">
+        <div className="border-b-4 border-blue-800 bg-slate-800 px-6 py-4">
+          <h1 className="text-base font-bold tracking-wide text-white">
             회원가입
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            재고 관리 서비스에 가입하세요
-          </p>
         </div>
 
-        <form
-          action={formAction}
-          className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
-        >
-          <div className="space-y-1.5">
-            <label
-              htmlFor="name"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-            >
+        <form action={formAction} className="space-y-3 p-6">
+          <div className="space-y-1">
+            <label htmlFor="name" className="text-xs font-medium text-slate-600">
               이름
             </label>
             <input
@@ -39,15 +27,12 @@ export default function SignupPage() {
               type="text"
               placeholder="홍길동"
               required
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+              className="w-full rounded-none border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-blue-700 focus:ring-1 focus:ring-blue-700"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label
-              htmlFor="email"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-            >
+          <div className="space-y-1">
+            <label htmlFor="email" className="text-xs font-medium text-slate-600">
               이메일
             </label>
             <input
@@ -56,15 +41,12 @@ export default function SignupPage() {
               type="email"
               placeholder="you@example.com"
               required
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+              className="w-full rounded-none border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-blue-700 focus:ring-1 focus:ring-blue-700"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label
-              htmlFor="password"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-            >
+          <div className="space-y-1">
+            <label htmlFor="password" className="text-xs font-medium text-slate-600">
               비밀번호
             </label>
             <input
@@ -74,17 +56,17 @@ export default function SignupPage() {
               placeholder="6자 이상"
               required
               minLength={6}
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+              className="w-full rounded-none border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-blue-700 focus:ring-1 focus:ring-blue-700"
             />
           </div>
 
           {state?.error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-400">
+            <p className="border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700">
               {state.error}
             </p>
           )}
           {state?.success && (
-            <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-600 dark:bg-green-950/40 dark:text-green-400">
+            <p className="border border-blue-300 bg-blue-50 px-3 py-2 text-xs text-blue-700">
               {state.success}
             </p>
           )}
@@ -92,17 +74,14 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-lg bg-zinc-900 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className="w-full rounded-none bg-blue-800 px-3 py-2.5 text-sm font-medium text-white hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {pending ? "가입 중..." : "회원가입"}
           </button>
 
-          <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="border-t border-slate-200 pt-3 text-center text-xs text-slate-500">
             이미 계정이 있나요?{" "}
-            <Link
-              href="/login"
-              className="font-medium text-zinc-900 underline underline-offset-2 dark:text-zinc-50"
-            >
+            <Link href="/login" className="font-medium text-blue-800 underline underline-offset-2">
               로그인
             </Link>
           </p>
