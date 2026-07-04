@@ -8,53 +8,106 @@ export default function SignupPage() {
   const [state, formAction, pending] = useActionState(signUp, undefined);
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <form action={formAction} className="w-full max-w-sm space-y-4">
-        <h1 className="text-xl font-semibold">회원가입</h1>
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 dark:bg-black">
+      <div className="w-full max-w-sm">
+        <div className="mb-8 flex flex-col items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-900 text-lg font-bold text-white dark:bg-white dark:text-zinc-900">
+            재
+          </div>
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+            회원가입
+          </h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            재고 관리 서비스에 가입하세요
+          </p>
+        </div>
 
-        <input
-          name="name"
-          type="text"
-          placeholder="이름"
-          required
-          className="w-full rounded border px-3 py-2"
-        />
-        <input
-          name="email"
-          type="email"
-          placeholder="이메일"
-          required
-          className="w-full rounded border px-3 py-2"
-        />
-        <input
-          name="password"
-          type="password"
-          placeholder="비밀번호 (6자 이상)"
-          required
-          minLength={6}
-          className="w-full rounded border px-3 py-2"
-        />
-
-        {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
-        {state?.success && (
-          <p className="text-sm text-green-600">{state.success}</p>
-        )}
-
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full rounded bg-black px-3 py-2 text-white disabled:opacity-50"
+        <form
+          action={formAction}
+          className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
         >
-          {pending ? "가입 중..." : "회원가입"}
-        </button>
+          <div className="space-y-1.5">
+            <label
+              htmlFor="name"
+              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              이름
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              placeholder="홍길동"
+              required
+              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+            />
+          </div>
 
-        <p className="text-sm text-gray-500">
-          이미 계정이 있나요?{" "}
-          <Link href="/login" className="underline">
-            로그인
-          </Link>
-        </p>
-      </form>
+          <div className="space-y-1.5">
+            <label
+              htmlFor="email"
+              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              이메일
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              required
+              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="password"
+              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              비밀번호
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="6자 이상"
+              required
+              minLength={6}
+              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+            />
+          </div>
+
+          {state?.error && (
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-400">
+              {state.error}
+            </p>
+          )}
+          {state?.success && (
+            <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-600 dark:bg-green-950/40 dark:text-green-400">
+              {state.success}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={pending}
+            className="w-full rounded-lg bg-zinc-900 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            {pending ? "가입 중..." : "회원가입"}
+          </button>
+
+          <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+            이미 계정이 있나요?{" "}
+            <Link
+              href="/login"
+              className="font-medium text-zinc-900 underline underline-offset-2 dark:text-zinc-50"
+            >
+              로그인
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }
