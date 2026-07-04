@@ -18,6 +18,11 @@ function StatusMessage({
 const inputClass =
   "w-full rounded-none border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-800 outline-none focus:border-blue-700 focus:ring-1 focus:ring-blue-700";
 
+const thClass =
+  "w-28 border border-slate-300 bg-slate-100 px-3 py-2 text-left align-middle text-sm font-medium text-slate-600";
+
+const tdClass = "border border-slate-300 p-2";
+
 const today = () => new Date().toISOString().slice(0, 10);
 
 export function PurchaseForm() {
@@ -32,60 +37,83 @@ export function PurchaseForm() {
     <form
       ref={formRef}
       action={formAction}
-      className="space-y-2 border border-slate-300 bg-white p-4"
+      className="border border-slate-300 bg-white"
     >
-      <h2 className="border-b border-slate-200 pb-2 text-sm font-bold text-slate-700">
+      <h2 className="border-b border-slate-200 bg-slate-50 px-4 py-2 text-sm font-bold text-slate-700">
         매입 등록
       </h2>
-      <input
-        name="in_date"
-        type="date"
-        required
-        defaultValue={today()}
-        className={inputClass}
-      />
-      <div className="flex gap-2">
-        <input
-          name="width_mm"
-          type="number"
-          step="0.01"
-          placeholder="가로(mm)"
-          required
-          className={inputClass}
-        />
-        <input
-          name="height_mm"
-          type="number"
-          step="0.01"
-          placeholder="세로(mm)"
-          required
-          className={inputClass}
-        />
-        <input
-          name="thickness_mm"
-          type="number"
-          step="0.01"
-          placeholder="두께(mm)"
-          required
-          className={inputClass}
-        />
+
+      <table className="w-full border-collapse">
+        <tbody>
+          <tr>
+            <th className={thClass}>매입일자</th>
+            <td className={tdClass}>
+              <input
+                name="in_date"
+                type="date"
+                required
+                defaultValue={today()}
+                className={inputClass}
+              />
+            </td>
+          </tr>
+          <tr>
+            <th className={thClass}>규격</th>
+            <td className={tdClass}>
+              <div className="flex gap-2">
+                <input
+                  name="width_mm"
+                  type="number"
+                  step="0.01"
+                  placeholder="가로(mm)"
+                  required
+                  className={inputClass}
+                />
+                <input
+                  name="height_mm"
+                  type="number"
+                  step="0.01"
+                  placeholder="세로(mm)"
+                  required
+                  className={inputClass}
+                />
+                <input
+                  name="thickness_mm"
+                  type="number"
+                  step="0.01"
+                  placeholder="두께(mm)"
+                  required
+                  className={inputClass}
+                />
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th className={thClass}>매입단가</th>
+            <td className={tdClass}>
+              <input
+                name="in_prc"
+                type="number"
+                step="0.01"
+                placeholder="원"
+                required
+                className={inputClass}
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div className="flex items-center gap-3 p-4">
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded-none bg-blue-800 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-900 disabled:opacity-50"
+        >
+          {pending ? "처리 중..." : "매입 등록"}
+        </button>
+        <StatusMessage state={state} />
       </div>
-      <input
-        name="in_prc"
-        type="number"
-        step="0.01"
-        placeholder="매입단가(원)"
-        required
-        className={inputClass}
-      />
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-none bg-blue-800 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-900 disabled:opacity-50"
-      >
-        {pending ? "처리 중..." : "매입 등록"}
-      </button>
-      <StatusMessage state={state} />
     </form>
   );
 }
@@ -102,64 +130,95 @@ export function SaleForm() {
     <form
       ref={formRef}
       action={formAction}
-      className="space-y-2 border border-slate-300 bg-white p-4"
+      className="border border-slate-300 bg-white"
     >
-      <h2 className="border-b border-slate-200 pb-2 text-sm font-bold text-slate-700">
+      <h2 className="border-b border-slate-200 bg-slate-50 px-4 py-2 text-sm font-bold text-slate-700">
         매출 등록
       </h2>
-      <div className="flex gap-2">
-        <input
-          name="order_date"
-          type="date"
-          required
-          defaultValue={today()}
-          className={inputClass}
-        />
-        <input name="out_date" type="date" placeholder="배송일자" className={inputClass} />
+
+      <table className="w-full border-collapse">
+        <tbody>
+          <tr>
+            <th className={thClass}>주문일자</th>
+            <td className={tdClass}>
+              <input
+                name="order_date"
+                type="date"
+                required
+                defaultValue={today()}
+                className={inputClass}
+              />
+            </td>
+          </tr>
+          <tr>
+            <th className={thClass}>배송일자</th>
+            <td className={tdClass}>
+              <input name="out_date" type="date" className={inputClass} />
+            </td>
+          </tr>
+          <tr>
+            <th className={thClass}>현장</th>
+            <td className={tdClass}>
+              <input name="apartment" placeholder="아파트명" className={inputClass} />
+            </td>
+          </tr>
+          <tr>
+            <th className={thClass}>규격</th>
+            <td className={tdClass}>
+              <div className="flex gap-2">
+                <input
+                  name="width_mm"
+                  type="number"
+                  step="0.01"
+                  placeholder="가로(mm)"
+                  required
+                  className={inputClass}
+                />
+                <input
+                  name="height_mm"
+                  type="number"
+                  step="0.01"
+                  placeholder="세로(mm)"
+                  required
+                  className={inputClass}
+                />
+                <input
+                  name="thickness_mm"
+                  type="number"
+                  step="0.01"
+                  placeholder="두께(mm)"
+                  required
+                  className={inputClass}
+                />
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th className={thClass}>매출단가</th>
+            <td className={tdClass}>
+              <input
+                name="out_prc"
+                type="number"
+                step="0.01"
+                placeholder="원"
+                required
+                className={inputClass}
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div className="flex items-center gap-3 p-4">
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded-none bg-slate-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+        >
+          {pending ? "처리 중..." : "매출 등록"}
+        </button>
+        <StatusMessage state={state} />
       </div>
-      <input name="apartment" placeholder="현장(아파트)" className={inputClass} />
-      <div className="flex gap-2">
-        <input
-          name="width_mm"
-          type="number"
-          step="0.01"
-          placeholder="가로(mm)"
-          required
-          className={inputClass}
-        />
-        <input
-          name="height_mm"
-          type="number"
-          step="0.01"
-          placeholder="세로(mm)"
-          required
-          className={inputClass}
-        />
-        <input
-          name="thickness_mm"
-          type="number"
-          step="0.01"
-          placeholder="두께(mm)"
-          required
-          className={inputClass}
-        />
-      </div>
-      <input
-        name="out_prc"
-        type="number"
-        step="0.01"
-        placeholder="매출단가(원)"
-        required
-        className={inputClass}
-      />
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-none bg-slate-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
-      >
-        {pending ? "처리 중..." : "매출 등록"}
-      </button>
-      <StatusMessage state={state} />
     </form>
   );
 }
