@@ -12,7 +12,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm border border-slate-300 bg-white shadow-sm">
         <div className="border-b-4 border-blue-800 bg-slate-800 px-6 py-4">
           <h1 className="text-base font-bold tracking-wide text-white">
-            재고 관리 시스템
+            판매관리시스템
           </h1>
         </div>
 

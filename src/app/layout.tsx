@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "재고 관리",
-  description: "입고/출고, 매입가·판매가·마진율 관리",
+  title: "판매관리시스템",
+  description: "매입등록/매출등록, 매입가·판매가·마진율 관리",
   manifest: "/manifest.json",
   icons: { icon: "/icons/icon.svg", apple: "/icons/icon.svg" },
 };

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/lib/actions/auth";
+import { SidebarNav } from "./sidebar-nav";
 
 export default async function DashboardLayout({
   children,
@@ -23,7 +24,7 @@ export default async function DashboardLayout({
     <div className="flex min-h-screen flex-col bg-slate-100 text-slate-800">
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-900 bg-slate-800 px-4">
         <span className="text-sm font-bold tracking-wide text-white">
-          재고 관리 시스템
+          판매관리시스템
         </span>
         <div className="flex items-center gap-3 text-xs text-slate-200">
           <span>
@@ -40,20 +41,7 @@ export default async function DashboardLayout({
 
       <div className="flex flex-1">
         <nav className="w-48 shrink-0 border-r border-slate-300 bg-white">
-          <ul className="py-2 text-sm">
-            <li>
-              <span className="block border-l-4 border-blue-800 bg-blue-50 px-4 py-2.5 font-medium text-blue-900">
-                매입/매출관리
-              </span>
-            </li>
-            {profile?.admin_yn === "1" && (
-              <li>
-                <span className="block px-4 py-2.5 text-slate-400">
-                  사용자관리 (준비중)
-                </span>
-              </li>
-            )}
-          </ul>
+          <SidebarNav isAdmin={profile?.admin_yn === "1"} />
         </nav>
 
         <main className="flex-1 p-6">{children}</main>

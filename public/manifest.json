@@ -1,7 +1,7 @@
 {
-  "name": "재고 관리",
-  "short_name": "재고관리",
-  "description": "입고/출고, 매입가·판매가·마진율 관리",
+  "name": "판매관리시스템",
+  "short_name": "판매관리",
+  "description": "매입등록/매출등록, 매입가·판매가·마진율 관리",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
