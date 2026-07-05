@@ -31,10 +31,20 @@ create trigger on_auth_user_created
 after insert on auth.users
 for each row execute function handle_new_user();
 
+-- 제품 기준정보 (매입/매출 등록 시 콤보박스로 선택)
+create table if not exists products (
+  product_id integer generated always as identity (start with 1 increment by 1) primary key,
+  product_nm text not null unique,
+  created_at timestamptz not null default now()
+);
+
+insert into products (product_nm) values ('미분류') on conflict (product_nm) do nothing;
+
 -- 매입 (원장, 수정/삭제 없음)
 create table if not exists purchases (
   in_id integer generated always as identity (start with 1 increment by 1) primary key,
   in_date date not null default current_date,
+  product_id integer not null references products(product_id),
   width_mm numeric(10, 2) not null,
   height_mm numeric(10, 2) not null,
   thickness_mm numeric(10, 2) not null,
@@ -43,12 +53,18 @@ create table if not exists purchases (
   created_at timestamptz not null default now()
 );
 
+-- 기존 프로젝트에 product_id가 없을 수 있으므로 추가하고, 기존 행은 '미분류'로 채워 넣음
+alter table purchases add column if not exists product_id integer references products(product_id);
+update purchases set product_id = (select product_id from products where product_nm = '미분류') where product_id is null;
+alter table purchases alter column product_id set not null;
+
 -- 매출 (원장, 수정/삭제 없음)
 create table if not exists sales (
   out_id integer generated always as identity (start with 1 increment by 1) primary key,
   order_date date not null default current_date,
   out_date date,
   apartment text,
+  product_id integer not null references products(product_id),
   width_mm numeric(10, 2) not null,
   height_mm numeric(10, 2) not null,
   thickness_mm numeric(10, 2) not null,
@@ -57,10 +73,23 @@ create table if not exists sales (
   created_at timestamptz not null default now()
 );
 
+alter table sales add column if not exists product_id integer references products(product_id);
+update sales set product_id = (select product_id from products where product_nm = '미분류') where product_id is null;
+alter table sales alter column product_id set not null;
+
 -- Row Level Security: 로그인한 사용자는 모두 조회 가능, 등록은 본인 명의로만
 alter table users enable row level security;
+alter table products enable row level security;
 alter table purchases enable row level security;
 alter table sales enable row level security;
+
+drop policy if exists "authenticated read products" on products;
+create policy "authenticated read products" on products
+  for select to authenticated using (true);
+
+drop policy if exists "authenticated insert products" on products;
+create policy "authenticated insert products" on products
+  for insert to authenticated with check (true);
 
 drop policy if exists "authenticated read users" on users;
 create policy "authenticated read users" on users
@@ -89,19 +118,23 @@ drop policy if exists "authenticated insert sales" on sales;
 create policy "authenticated insert sales" on sales
   for insert to authenticated with check (out_user_id = auth.uid());
 
--- 규격(가로/세로/두께)이 가장 비슷한 매입/매출 1건 조회 (유클리드 거리 기준, 없으면 null)
-create or replace function nearest_purchase(w numeric, h numeric, t numeric)
+-- 같은 제품 안에서 규격(가로/세로/두께)이 가장 비슷한 매입/매출 1건 조회 (유클리드 거리 기준, 없으면 null)
+drop function if exists nearest_purchase(numeric, numeric, numeric);
+create or replace function nearest_purchase(p_product_id integer, w numeric, h numeric, t numeric)
 returns purchases as $$
   select *
   from purchases
+  where product_id = p_product_id
   order by power(width_mm - w, 2) + power(height_mm - h, 2) + power(thickness_mm - t, 2) asc
   limit 1;
 $$ language sql stable;
 
-create or replace function nearest_sale(w numeric, h numeric, t numeric)
+drop function if exists nearest_sale(numeric, numeric, numeric);
+create or replace function nearest_sale(p_product_id integer, w numeric, h numeric, t numeric)
 returns sales as $$
   select *
   from sales
+  where product_id = p_product_id
   order by power(width_mm - w, 2) + power(height_mm - h, 2) + power(thickness_mm - t, 2) asc
   limit 1;
 $$ language sql stable;

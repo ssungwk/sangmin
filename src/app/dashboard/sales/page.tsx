@@ -1,15 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatSpec } from "@/lib/format";
+import { listProducts } from "@/lib/actions/products";
 import { SaleForm } from "../forms";
 
 export default async function SalesPage() {
   const supabase = await createClient();
 
-  const { data: sales } = await supabase
-    .from("sales")
-    .select("*")
-    .order("order_date", { ascending: false })
-    .limit(50);
+  const [{ data: sales }, { products }] = await Promise.all([
+    supabase
+      .from("sales")
+      .select("*, products(product_nm)")
+      .order("order_date", { ascending: false })
+      .limit(50),
+    listProducts(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -17,7 +21,7 @@ export default async function SalesPage() {
         매출등록
       </h1>
 
-      <SaleForm />
+      <SaleForm products={products} />
 
       <section className="border border-slate-300 bg-white">
         <h2 className="border-b border-slate-300 bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700">
@@ -30,6 +34,7 @@ export default async function SalesPage() {
                 <th className="border-r border-slate-200 p-2">주문일자</th>
                 <th className="border-r border-slate-200 p-2">배송일자</th>
                 <th className="border-r border-slate-200 p-2">현장</th>
+                <th className="border-r border-slate-200 p-2">제품</th>
                 <th className="border-r border-slate-200 p-2">규격</th>
                 <th className="p-2">매출단가</th>
               </tr>
@@ -41,6 +46,9 @@ export default async function SalesPage() {
                   <td className="border-r border-slate-200 p-2">{row.out_date ?? "-"}</td>
                   <td className="border-r border-slate-200 p-2">{row.apartment ?? "-"}</td>
                   <td className="border-r border-slate-200 p-2">
+                    {row.products?.product_nm ?? "-"}
+                  </td>
+                  <td className="border-r border-slate-200 p-2">
                     {formatSpec(row.width_mm, row.height_mm, row.thickness_mm)}
                   </td>
                   <td className="p-2">{Number(row.out_prc).toLocaleString()}</td>
@@ -48,7 +56,7 @@ export default async function SalesPage() {
               ))}
               {(sales ?? []).length === 0 && (
                 <tr>
-                  <td colSpan={5} className="p-4 text-center text-slate-400">
+                  <td colSpan={6} className="p-4 text-center text-slate-400">
                     매출 내역이 없습니다.
                   </td>
                 </tr>

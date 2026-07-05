@@ -18,12 +18,17 @@ export type NearestSale = {
   out_prc: number;
 };
 
-export async function findNearestSpec(width: number, height: number, thickness: number) {
+export async function findNearestSpec(
+  productId: number,
+  width: number,
+  height: number,
+  thickness: number,
+) {
   const supabase = await createClient();
 
   const [{ data: purchase }, { data: sale }] = await Promise.all([
-    supabase.rpc("nearest_purchase", { w: width, h: height, t: thickness }),
-    supabase.rpc("nearest_sale", { w: width, h: height, t: thickness }),
+    supabase.rpc("nearest_purchase", { p_product_id: productId, w: width, h: height, t: thickness }),
+    supabase.rpc("nearest_sale", { p_product_id: productId, w: width, h: height, t: thickness }),
   ]);
 
   return {

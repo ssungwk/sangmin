@@ -12,6 +12,7 @@ export async function registerPurchase(_prevState: unknown, formData: FormData) 
 
   const { error } = await supabase.from("purchases").insert({
     in_date: formData.get("in_date") as string,
+    product_id: Number(formData.get("product_id")),
     width_mm: Number(formData.get("width_mm")),
     height_mm: Number(formData.get("height_mm")),
     thickness_mm: Number(formData.get("thickness_mm")),
@@ -36,6 +37,7 @@ export async function registerSale(_prevState: unknown, formData: FormData) {
     order_date: formData.get("order_date") as string,
     out_date: (formData.get("out_date") as string) || null,
     apartment: (formData.get("apartment") as string) || null,
+    product_id: Number(formData.get("product_id")),
     width_mm: Number(formData.get("width_mm")),
     height_mm: Number(formData.get("height_mm")),
     thickness_mm: Number(formData.get("thickness_mm")),

@@ -7,6 +7,7 @@ const menuItems = [
   { href: "/dashboard", label: "현황" },
   { href: "/dashboard/purchases", label: "매입등록" },
   { href: "/dashboard/sales", label: "매출등록" },
+  { href: "/dashboard/products", label: "제품관리" },
 ];
 
 const adminMenuItems = [{ href: "/dashboard/users", label: "사용자관리" }];
