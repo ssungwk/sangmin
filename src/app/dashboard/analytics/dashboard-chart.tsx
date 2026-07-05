@@ -12,7 +12,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { formatSpec } from "@/lib/format";
 import type { PurchaseRow } from "../purchases/purchase-manager";
 import type { SaleRow } from "../sales/sale-manager";
 
@@ -25,6 +24,109 @@ const COLORS = {
 function daysInMonth(month: string) {
   const [y, m] = month.split("-").map(Number);
   return new Date(y, m, 0).getDate();
+}
+
+function summarizeByProduct<T>(
+  rows: T[],
+  getProduct: (row: T) => string,
+  getQty: (row: T) => number,
+  getAmount: (row: T) => number,
+) {
+  const map = new Map<string, { qty: number; amount: number }>();
+  for (const row of rows) {
+    const key = getProduct(row);
+    const cur = map.get(key) ?? { qty: 0, amount: 0 };
+    cur.qty += getQty(row);
+    cur.amount += getAmount(row);
+    map.set(key, cur);
+  }
+  const list = [...map.entries()]
+    .map(([product, v]) => ({ product, qty: v.qty, amount: v.amount }))
+    .sort((a, b) => b.amount - a.amount);
+  const totalQty = list.reduce((sum, r) => sum + r.qty, 0);
+  const totalAmount = list.reduce((sum, r) => sum + r.amount, 0);
+  return { list, totalQty, totalAmount };
+}
+
+type TooltipEntry = {
+  dataKey?: string;
+  name?: string;
+  value?: number | string;
+  color?: string;
+  payload?: { day?: string };
+};
+
+function ChartTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: TooltipEntry[];
+  label?: string | number;
+}) {
+  if (!active || !payload?.length) return null;
+  const day = payload[0]?.payload?.day ?? label;
+  const sorted = [...payload].sort((a, b) => Number(b.value ?? 0) - Number(a.value ?? 0));
+
+  return (
+    <div className="border border-slate-300 bg-white px-3 py-2 text-xs shadow-sm">
+      <p className="mb-1 font-bold text-slate-800">{day}</p>
+      {sorted.map((entry) => (
+        <p key={entry.dataKey} style={{ color: entry.color }}>
+          {entry.name}:{" "}
+          {entry.name === "마진율" ? `${entry.value}%` : Number(entry.value).toLocaleString()}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+function ProductSummaryTable({
+  list,
+  totalQty,
+  totalAmount,
+  emptyMessage,
+}: {
+  list: { product: string; qty: number; amount: number }[];
+  totalQty: number;
+  totalAmount: number;
+  emptyMessage: string;
+}) {
+  return (
+    <table className="w-full border-collapse text-sm">
+      <thead>
+        <tr className="border-b border-slate-300 bg-slate-50 text-left text-slate-600">
+          <th className="border-r border-slate-200 p-2">제품</th>
+          <th className="border-r border-slate-200 p-2">수량(소계)</th>
+          <th className="p-2">금액(소계)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {list.map((row) => (
+          <tr key={row.product} className="border-b border-slate-200">
+            <td className="border-r border-slate-200 p-2">{row.product}</td>
+            <td className="border-r border-slate-200 p-2">{row.qty}</td>
+            <td className="p-2">{row.amount.toLocaleString()}</td>
+          </tr>
+        ))}
+        {list.length === 0 && (
+          <tr>
+            <td colSpan={3} className="p-4 text-center text-slate-400">
+              {emptyMessage}
+            </td>
+          </tr>
+        )}
+        {list.length > 0 && (
+          <tr className="border-t-2 border-slate-400 bg-slate-50 font-bold">
+            <td className="border-r border-slate-200 p-2">합계</td>
+            <td className="border-r border-slate-200 p-2">{totalQty}</td>
+            <td className="p-2">{totalAmount.toLocaleString()}</td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  );
 }
 
 export function DashboardChart({
@@ -62,6 +164,27 @@ export function DashboardChart({
     [sales, selectedDay],
   );
 
+  const purchaseSummary = useMemo(
+    () =>
+      summarizeByProduct(
+        selectedPurchases,
+        (r) => r.products?.product_nm ?? r.product_id,
+        (r) => r.in_qty,
+        (r) => r.in_qty * r.in_prc,
+      ),
+    [selectedPurchases],
+  );
+  const saleSummary = useMemo(
+    () =>
+      summarizeByProduct(
+        selectedSales,
+        (r) => r.products?.product_nm ?? r.product_id,
+        (r) => r.out_qty,
+        (r) => r.out_qty * r.out_prc,
+      ),
+    [selectedSales],
+  );
+
   return (
     <div className="space-y-6">
       <section className="border border-slate-300 bg-white p-4">
@@ -95,14 +218,7 @@ export function DashboardChart({
               tick={{ fontSize: 12, fill: "#898781" }}
               tickFormatter={(v) => `${v}%`}
             />
-            <Tooltip
-              labelFormatter={(_, payload) => payload?.[0]?.payload?.day ?? ""}
-              formatter={(value, name) =>
-                name === "마진율"
-                  ? [`${value}%`, name]
-                  : [Number(value).toLocaleString(), name]
-              }
-            />
+            <Tooltip content={<ChartTooltip />} />
             <Legend wrapperStyle={{ display: "none" }} />
             <Bar
               yAxisId="amount"
@@ -137,37 +253,12 @@ export function DashboardChart({
               {selectedDay} 매입 정보
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-slate-300 bg-slate-50 text-left text-slate-600">
-                    <th className="border-r border-slate-200 p-2">제품</th>
-                    <th className="border-r border-slate-200 p-2">규격</th>
-                    <th className="border-r border-slate-200 p-2">개수</th>
-                    <th className="p-2">단가</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedPurchases.map((row) => (
-                    <tr key={row.in_id} className="border-b border-slate-200">
-                      <td className="border-r border-slate-200 p-2">
-                        {row.products?.product_nm ?? "-"}
-                      </td>
-                      <td className="border-r border-slate-200 p-2">
-                        {formatSpec(row.width_mm, row.height_mm, row.thickness_mm)}
-                      </td>
-                      <td className="border-r border-slate-200 p-2">{row.in_qty}</td>
-                      <td className="p-2">{Number(row.in_prc).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                  {selectedPurchases.length === 0 && (
-                    <tr>
-                      <td colSpan={4} className="p-4 text-center text-slate-400">
-                        매입 내역이 없습니다.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+              <ProductSummaryTable
+                list={purchaseSummary.list}
+                totalQty={purchaseSummary.totalQty}
+                totalAmount={purchaseSummary.totalAmount}
+                emptyMessage="매입 내역이 없습니다."
+              />
             </div>
           </section>
 
@@ -176,39 +267,12 @@ export function DashboardChart({
               {selectedDay} 매출 정보
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-slate-300 bg-slate-50 text-left text-slate-600">
-                    <th className="border-r border-slate-200 p-2">현장</th>
-                    <th className="border-r border-slate-200 p-2">제품</th>
-                    <th className="border-r border-slate-200 p-2">규격</th>
-                    <th className="border-r border-slate-200 p-2">개수</th>
-                    <th className="p-2">단가</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedSales.map((row) => (
-                    <tr key={row.out_id} className="border-b border-slate-200">
-                      <td className="border-r border-slate-200 p-2">{row.apartment ?? "-"}</td>
-                      <td className="border-r border-slate-200 p-2">
-                        {row.products?.product_nm ?? "-"}
-                      </td>
-                      <td className="border-r border-slate-200 p-2">
-                        {formatSpec(row.width_mm, row.height_mm, row.thickness_mm)}
-                      </td>
-                      <td className="border-r border-slate-200 p-2">{row.out_qty}</td>
-                      <td className="p-2">{Number(row.out_prc).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                  {selectedSales.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="p-4 text-center text-slate-400">
-                        매출 내역이 없습니다.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+              <ProductSummaryTable
+                list={saleSummary.list}
+                totalQty={saleSummary.totalQty}
+                totalAmount={saleSummary.totalAmount}
+                emptyMessage="매출 내역이 없습니다."
+              />
             </div>
           </section>
         </>

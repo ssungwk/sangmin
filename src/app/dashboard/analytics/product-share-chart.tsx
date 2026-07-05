@@ -11,7 +11,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { formatSpec } from "@/lib/format";
 import type { SaleRow } from "../sales/sale-manager";
 
 // 고정 카테고리 순서 팔레트 (dataviz 스킬 기준 8슬롯, CVD 검증된 세트)
@@ -35,6 +34,37 @@ const MONTH_LABELS = [
 
 function saleAmount(row: SaleRow) {
   return row.out_qty * row.out_prc;
+}
+
+type TooltipEntry = {
+  dataKey?: string;
+  name?: string;
+  value?: number | string;
+  color?: string;
+};
+
+function ShareTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: TooltipEntry[];
+  label?: string | number;
+}) {
+  if (!active || !payload?.length) return null;
+  const sorted = [...payload].sort((a, b) => Number(b.value ?? 0) - Number(a.value ?? 0));
+
+  return (
+    <div className="border border-slate-300 bg-white px-3 py-2 text-xs shadow-sm">
+      <p className="mb-1 font-bold text-slate-800">{label}</p>
+      {sorted.map((entry) => (
+        <p key={entry.dataKey} style={{ color: entry.color }}>
+          {entry.name}: {entry.value}%
+        </p>
+      ))}
+    </div>
+  );
 }
 
 export function ProductShareChart({ year, sales }: { year: string; sales: SaleRow[] }) {
@@ -86,6 +116,23 @@ export function ProductShareChart({ year, sales }: { year: string; sales: SaleRo
     [sales, selectedMonth],
   );
 
+  const salesSummary = useMemo(() => {
+    const map = new Map<string, { qty: number; amount: number }>();
+    for (const row of selectedSales) {
+      const key = row.products?.product_nm ?? row.product_id;
+      const cur = map.get(key) ?? { qty: 0, amount: 0 };
+      cur.qty += row.out_qty;
+      cur.amount += saleAmount(row);
+      map.set(key, cur);
+    }
+    const list = [...map.entries()]
+      .map(([product, v]) => ({ product, qty: v.qty, amount: v.amount }))
+      .sort((a, b) => b.amount - a.amount);
+    const totalQty = list.reduce((sum, r) => sum + r.qty, 0);
+    const totalAmount = list.reduce((sum, r) => sum + r.amount, 0);
+    return { list, totalQty, totalAmount };
+  }, [selectedSales]);
+
   return (
     <div className="space-y-6">
       <section className="border border-slate-300 bg-white p-4">
@@ -110,7 +157,7 @@ export function ProductShareChart({ year, sales }: { year: string; sales: SaleRo
               tickFormatter={(v) => `${v}%`}
               domain={[0, 100]}
             />
-            <Tooltip formatter={(value, name) => [`${value}%`, name]} />
+            <Tooltip content={<ShareTooltip />} />
             <Legend wrapperStyle={{ display: "none" }} />
             {products.map((p, i) => (
               <Bar
@@ -135,34 +182,31 @@ export function ProductShareChart({ year, sales }: { year: string; sales: SaleRo
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-slate-300 bg-slate-50 text-left text-slate-600">
-                  <th className="border-r border-slate-200 p-2">배송일자</th>
-                  <th className="border-r border-slate-200 p-2">현장</th>
                   <th className="border-r border-slate-200 p-2">제품</th>
-                  <th className="border-r border-slate-200 p-2">규격</th>
-                  <th className="border-r border-slate-200 p-2">개수</th>
-                  <th className="p-2">단가</th>
+                  <th className="border-r border-slate-200 p-2">수량(소계)</th>
+                  <th className="p-2">금액(소계)</th>
                 </tr>
               </thead>
               <tbody>
-                {selectedSales.map((row) => (
-                  <tr key={row.out_id} className="border-b border-slate-200">
-                    <td className="border-r border-slate-200 p-2">{row.out_date}</td>
-                    <td className="border-r border-slate-200 p-2">{row.apartment ?? "-"}</td>
-                    <td className="border-r border-slate-200 p-2">
-                      {row.products?.product_nm ?? "-"}
-                    </td>
-                    <td className="border-r border-slate-200 p-2">
-                      {formatSpec(row.width_mm, row.height_mm, row.thickness_mm)}
-                    </td>
-                    <td className="border-r border-slate-200 p-2">{row.out_qty}</td>
-                    <td className="p-2">{Number(row.out_prc).toLocaleString()}</td>
+                {salesSummary.list.map((row) => (
+                  <tr key={row.product} className="border-b border-slate-200">
+                    <td className="border-r border-slate-200 p-2">{row.product}</td>
+                    <td className="border-r border-slate-200 p-2">{row.qty}</td>
+                    <td className="p-2">{row.amount.toLocaleString()}</td>
                   </tr>
                 ))}
-                {selectedSales.length === 0 && (
+                {salesSummary.list.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="p-4 text-center text-slate-400">
+                    <td colSpan={3} className="p-4 text-center text-slate-400">
                       판매 내역이 없습니다.
                     </td>
+                  </tr>
+                )}
+                {salesSummary.list.length > 0 && (
+                  <tr className="border-t-2 border-slate-400 bg-slate-50 font-bold">
+                    <td className="border-r border-slate-200 p-2">합계</td>
+                    <td className="border-r border-slate-200 p-2">{salesSummary.totalQty}</td>
+                    <td className="p-2">{salesSummary.totalAmount.toLocaleString()}</td>
                   </tr>
                 )}
               </tbody>
