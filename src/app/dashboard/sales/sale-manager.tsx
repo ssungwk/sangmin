@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useEffect } from "react";
+import { useActionState, useState, useEffect, useRef } from "react";
 import { registerSale, updateSale, deleteSale } from "@/lib/actions/inventory";
 import { findNearestSpec, type NearestPurchase, type NearestSale } from "@/lib/actions/lookup";
 import { formatSpec } from "@/lib/format";
@@ -41,6 +41,7 @@ export function SaleManager({
   sales: SaleRow[];
 }) {
   const [selected, setSelected] = useState<SaleRow | null>(null);
+  const outPrcRef = useRef<HTMLInputElement>(null);
   const [addState, addAction, addPending] = useActionState(registerSale, undefined);
   const [updateState, updateAction, updatePending] = useActionState(updateSale, undefined);
   const [deleteState, deleteAction, deletePending] = useActionState(deleteSale, undefined);
@@ -142,6 +143,7 @@ export function SaleManager({
                   name="apartment"
                   placeholder="아파트명"
                   defaultValue={selected?.apartment ?? ""}
+                  autoComplete="off"
                   className={inputClass}
                 />
               </td>
@@ -218,6 +220,7 @@ export function SaleManager({
                     className={inputClass}
                   />
                   <input
+                    ref={outPrcRef}
                     name="out_prc"
                     type="number"
                     step="0.01"
@@ -315,6 +318,16 @@ export function SaleManager({
           <button
             type="submit"
             disabled={pending}
+            onClick={(e) => {
+              const outPrc = Number(outPrcRef.current?.value);
+              const inPrc = lookup?.purchase?.in_prc;
+              if (inPrc != null && outPrc > 0 && outPrc < inPrc) {
+                const ok = confirm(
+                  `매출단가(${outPrc.toLocaleString()}원)가 유사 규격 매입가(${inPrc.toLocaleString()}원)보다 낮습니다. 그래도 저장하시겠습니까?`,
+                );
+                if (!ok) e.preventDefault();
+              }
+            }}
             className="rounded-none bg-slate-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
           >
             {isEditing ? (updatePending ? "수정 중..." : "수정") : addPending ? "처리 중..." : "추가"}
