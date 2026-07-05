@@ -3,6 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
+function revalidatePurchasePaths() {
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/purchases");
+}
+
+function revalidateSalePaths() {
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/sales");
+}
+
 export async function registerPurchase(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
   const {
@@ -22,8 +32,42 @@ export async function registerPurchase(_prevState: unknown, formData: FormData) 
 
   if (error) return { error: error.message };
 
-  revalidatePath("/dashboard");
+  revalidatePurchasePaths();
   return { success: "매입 등록되었습니다." };
+}
+
+export async function updatePurchase(_prevState: unknown, formData: FormData) {
+  const inId = Number(formData.get("in_id"));
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("purchases")
+    .update({
+      in_date: formData.get("in_date") as string,
+      product_id: formData.get("product_id") as string,
+      width_mm: Number(formData.get("width_mm")),
+      height_mm: Number(formData.get("height_mm")),
+      thickness_mm: Number(formData.get("thickness_mm")),
+      in_prc: Number(formData.get("in_prc")),
+    })
+    .eq("in_id", inId);
+
+  if (error) return { error: error.message };
+
+  revalidatePurchasePaths();
+  return { success: "매입 내역이 수정되었습니다." };
+}
+
+export async function deletePurchase(_prevState: unknown, formData: FormData) {
+  const inId = Number(formData.get("in_id"));
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("purchases").delete().eq("in_id", inId);
+
+  if (error) return { error: error.message };
+
+  revalidatePurchasePaths();
+  return { success: "매입 내역이 삭제되었습니다." };
 }
 
 export async function registerSale(_prevState: unknown, formData: FormData) {
@@ -47,6 +91,42 @@ export async function registerSale(_prevState: unknown, formData: FormData) {
 
   if (error) return { error: error.message };
 
-  revalidatePath("/dashboard");
+  revalidateSalePaths();
   return { success: "매출 등록되었습니다." };
+}
+
+export async function updateSale(_prevState: unknown, formData: FormData) {
+  const outId = Number(formData.get("out_id"));
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("sales")
+    .update({
+      order_date: formData.get("order_date") as string,
+      out_date: (formData.get("out_date") as string) || null,
+      apartment: (formData.get("apartment") as string) || null,
+      product_id: formData.get("product_id") as string,
+      width_mm: Number(formData.get("width_mm")),
+      height_mm: Number(formData.get("height_mm")),
+      thickness_mm: Number(formData.get("thickness_mm")),
+      out_prc: Number(formData.get("out_prc")),
+    })
+    .eq("out_id", outId);
+
+  if (error) return { error: error.message };
+
+  revalidateSalePaths();
+  return { success: "매출 내역이 수정되었습니다." };
+}
+
+export async function deleteSale(_prevState: unknown, formData: FormData) {
+  const outId = Number(formData.get("out_id"));
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("sales").delete().eq("out_id", outId);
+
+  if (error) return { error: error.message };
+
+  revalidateSalePaths();
+  return { success: "매출 내역이 삭제되었습니다." };
 }

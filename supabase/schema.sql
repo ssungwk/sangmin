@@ -42,7 +42,7 @@ create table if not exists products (
 
 alter table products add column if not exists sort_no integer not null default 0;
 
--- 매입 (원장, 수정/삭제 없음)
+-- 매입 (등록자 본인 또는 관리자가 수정/삭제 가능)
 create table if not exists purchases (
   in_id integer generated always as identity (start with 1 increment by 1) primary key,
   in_date date not null default current_date,
@@ -55,7 +55,7 @@ create table if not exists purchases (
   created_at timestamptz not null default now()
 );
 
--- 매출 (원장, 수정/삭제 없음)
+-- 매출 (등록자 본인 또는 관리자가 수정/삭제 가능)
 create table if not exists sales (
   out_id integer generated always as identity (start with 1 increment by 1) primary key,
   order_date date not null default current_date,
@@ -152,6 +152,18 @@ drop policy if exists "authenticated insert purchases" on purchases;
 create policy "authenticated insert purchases" on purchases
   for insert to authenticated with check (in_user_id = auth.uid());
 
+-- 등록자 본인 또는 관리자만 수정/삭제 가능
+drop policy if exists "own or admin update purchases" on purchases;
+create policy "own or admin update purchases" on purchases
+  for update to authenticated
+  using (in_user_id = auth.uid() or exists (select 1 from users me where me.user_id = auth.uid() and me.admin_yn = '1'))
+  with check (in_user_id = auth.uid() or exists (select 1 from users me where me.user_id = auth.uid() and me.admin_yn = '1'));
+
+drop policy if exists "own or admin delete purchases" on purchases;
+create policy "own or admin delete purchases" on purchases
+  for delete to authenticated
+  using (in_user_id = auth.uid() or exists (select 1 from users me where me.user_id = auth.uid() and me.admin_yn = '1'));
+
 drop policy if exists "authenticated read sales" on sales;
 create policy "authenticated read sales" on sales
   for select to authenticated using (true);
@@ -159,6 +171,17 @@ create policy "authenticated read sales" on sales
 drop policy if exists "authenticated insert sales" on sales;
 create policy "authenticated insert sales" on sales
   for insert to authenticated with check (out_user_id = auth.uid());
+
+drop policy if exists "own or admin update sales" on sales;
+create policy "own or admin update sales" on sales
+  for update to authenticated
+  using (out_user_id = auth.uid() or exists (select 1 from users me where me.user_id = auth.uid() and me.admin_yn = '1'))
+  with check (out_user_id = auth.uid() or exists (select 1 from users me where me.user_id = auth.uid() and me.admin_yn = '1'));
+
+drop policy if exists "own or admin delete sales" on sales;
+create policy "own or admin delete sales" on sales
+  for delete to authenticated
+  using (out_user_id = auth.uid() or exists (select 1 from users me where me.user_id = auth.uid() and me.admin_yn = '1'));
 
 -- 같은 제품 안에서 규격(가로/세로/두께)이 가장 비슷한 매입/매출 1건 조회 (유클리드 거리 기준, 없으면 null)
 drop function if exists nearest_purchase(numeric, numeric, numeric);
