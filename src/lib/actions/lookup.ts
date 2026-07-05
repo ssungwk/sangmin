@@ -19,7 +19,7 @@ export type NearestSale = {
 };
 
 export async function findNearestSpec(
-  productId: number,
+  productId: string,
   width: number,
   height: number,
   thickness: number,

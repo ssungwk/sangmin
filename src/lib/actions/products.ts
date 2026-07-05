@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 export type Product = {
-  product_id: number;
+  product_id: string;
   product_nm: string;
 };
 
@@ -24,7 +24,9 @@ export async function addProduct(_prevState: unknown, formData: FormData) {
   if (!productNm) return { error: "제품명을 입력해주세요." };
 
   const supabase = await createClient();
-  const { error } = await supabase.from("products").insert({ product_nm: productNm });
+  const { error } = await supabase
+    .from("products")
+    .insert({ product_id: productNm, product_nm: productNm });
 
   if (error) {
     if (error.code === "23505") return { error: "이미 등록된 제품명입니다." };

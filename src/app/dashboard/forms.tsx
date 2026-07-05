@@ -168,7 +168,6 @@ export function SaleForm({ products }: { products: Product[] }) {
     }
   }, [state]);
 
-  const pid = Number(productId);
   const w = Number(width);
   const h = Number(height);
   const t = Number(thickness);
@@ -182,7 +181,7 @@ export function SaleForm({ products }: { products: Product[] }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- flips loading flag before the debounced lookup fires; guarded by `cancelled` on cleanup
     setLookupLoading(true);
     const timer = setTimeout(() => {
-      findNearestSpec(pid, w, h, t).then((result) => {
+      findNearestSpec(productId, w, h, t).then((result) => {
         if (!cancelled) {
           setLookup(result);
           setLookupLoading(false);
@@ -194,7 +193,7 @@ export function SaleForm({ products }: { products: Product[] }) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [specComplete, pid, w, h, t]);
+  }, [specComplete, productId, w, h, t]);
 
   return (
     <form

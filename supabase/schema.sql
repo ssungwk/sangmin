@@ -32,19 +32,18 @@ after insert on auth.users
 for each row execute function handle_new_user();
 
 -- 제품 기준정보 (매입/매출 등록 시 콤보박스로 선택)
+-- product_id는 엑셀에서 그대로 가져올 수 있도록 문자열 자연키 사용 (등록 시 product_nm과 동일한 값을 입력)
 create table if not exists products (
-  product_id integer generated always as identity (start with 1 increment by 1) primary key,
-  product_nm text not null unique,
+  product_id text primary key,
+  product_nm text not null,
   created_at timestamptz not null default now()
 );
-
-insert into products (product_nm) values ('미분류') on conflict (product_nm) do nothing;
 
 -- 매입 (원장, 수정/삭제 없음)
 create table if not exists purchases (
   in_id integer generated always as identity (start with 1 increment by 1) primary key,
   in_date date not null default current_date,
-  product_id integer not null references products(product_id),
+  product_id text not null references products(product_id),
   width_mm numeric(10, 2) not null,
   height_mm numeric(10, 2) not null,
   thickness_mm numeric(10, 2) not null,
@@ -53,18 +52,13 @@ create table if not exists purchases (
   created_at timestamptz not null default now()
 );
 
--- 기존 프로젝트에 product_id가 없을 수 있으므로 추가하고, 기존 행은 '미분류'로 채워 넣음
-alter table purchases add column if not exists product_id integer references products(product_id);
-update purchases set product_id = (select product_id from products where product_nm = '미분류') where product_id is null;
-alter table purchases alter column product_id set not null;
-
 -- 매출 (원장, 수정/삭제 없음)
 create table if not exists sales (
   out_id integer generated always as identity (start with 1 increment by 1) primary key,
   order_date date not null default current_date,
   out_date date,
   apartment text,
-  product_id integer not null references products(product_id),
+  product_id text not null references products(product_id),
   width_mm numeric(10, 2) not null,
   height_mm numeric(10, 2) not null,
   thickness_mm numeric(10, 2) not null,
@@ -73,9 +67,46 @@ create table if not exists sales (
   created_at timestamptz not null default now()
 );
 
-alter table sales add column if not exists product_id integer references products(product_id);
-update sales set product_id = (select product_id from products where product_nm = '미분류') where product_id is null;
+-- 이전 버전에서 product_id를 integer(자동증가)로 만든 적이 있다면 text로 안전하게 전환하고,
+-- product_id가 항상 product_nm과 같은 값이 되도록 맞춤.
+-- (신규 설치에서는 이미 text이고 두 값이 같으므로 아래 구문은 실질적으로 아무 것도 바꾸지 않음)
+alter table purchases drop constraint if exists purchases_product_id_fkey;
+alter table sales drop constraint if exists sales_product_id_fkey;
+alter table products drop constraint if exists products_pkey;
+
+-- purchases/sales의 product_id를 text로 바꾼 뒤(옛 integer 값은 문자열로만 캐스팅됨),
+-- products가 아직 옛 product_id를 갖고 있을 때 그 값을 product_nm으로 다시 매핑
+alter table purchases alter column product_id type text using product_id::text;
+alter table sales alter column product_id type text using product_id::text;
+
+update purchases p set product_id = pr.product_nm
+  from products pr where pr.product_id::text = p.product_id and pr.product_nm <> p.product_id;
+update sales s set product_id = pr.product_nm
+  from products pr where pr.product_id::text = s.product_id and pr.product_nm <> s.product_id;
+
+do $$
+begin
+  if exists (
+    select 1 from pg_attribute a
+    join pg_class c on a.attrelid = c.oid
+    where c.relname = 'products' and a.attname = 'product_id' and a.attidentity <> ''
+  ) then
+    alter table products alter column product_id drop identity;
+  end if;
+end $$;
+
+-- products 자신의 키도 product_nm과 같은 값으로 고정
+alter table products alter column product_id type text using product_nm;
+alter table products add primary key (product_id);
+
+alter table purchases alter column product_id set not null;
+alter table purchases add constraint purchases_product_id_fkey foreign key (product_id) references products(product_id);
+
 alter table sales alter column product_id set not null;
+alter table sales add constraint sales_product_id_fkey foreign key (product_id) references products(product_id);
+
+-- 위 마이그레이션으로 product_id가 text로 정리된 뒤에 기본 제품 보장 (신규 설치용, 기존 DB에는 이미 존재)
+insert into products (product_id, product_nm) values ('미분류', '미분류') on conflict (product_id) do nothing;
 
 -- Row Level Security: 로그인한 사용자는 모두 조회 가능, 등록은 본인 명의로만
 alter table users enable row level security;
@@ -120,7 +151,8 @@ create policy "authenticated insert sales" on sales
 
 -- 같은 제품 안에서 규격(가로/세로/두께)이 가장 비슷한 매입/매출 1건 조회 (유클리드 거리 기준, 없으면 null)
 drop function if exists nearest_purchase(numeric, numeric, numeric);
-create or replace function nearest_purchase(p_product_id integer, w numeric, h numeric, t numeric)
+drop function if exists nearest_purchase(integer, numeric, numeric, numeric);
+create or replace function nearest_purchase(p_product_id text, w numeric, h numeric, t numeric)
 returns purchases as $$
   select *
   from purchases
@@ -130,7 +162,8 @@ returns purchases as $$
 $$ language sql stable;
 
 drop function if exists nearest_sale(numeric, numeric, numeric);
-create or replace function nearest_sale(p_product_id integer, w numeric, h numeric, t numeric)
+drop function if exists nearest_sale(integer, numeric, numeric, numeric);
+create or replace function nearest_sale(p_product_id text, w numeric, h numeric, t numeric)
 returns sales as $$
   select *
   from sales
