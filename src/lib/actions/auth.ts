@@ -24,7 +24,7 @@ export async function signIn(_prevState: unknown, formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  redirect("/dashboard/analytics");
 }
 
 export async function signUp(_prevState: unknown, formData: FormData) {
