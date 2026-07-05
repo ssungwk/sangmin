@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { updateProduct, deleteProduct } from "@/lib/actions/products";
 import type { Product } from "@/lib/actions/products";
+import { StatusMessage } from "../status-message";
 
 const cellInputClass =
   "rounded-none border border-slate-300 px-2 py-1 text-sm text-slate-800 outline-none focus:border-blue-700 focus:ring-1 focus:ring-blue-700";
@@ -37,8 +38,7 @@ export function ProductRow({ product }: { product: Product }) {
           >
             {updatePending ? "저장 중..." : "저장"}
           </button>
-          {updateState?.success && <span className="text-xs text-blue-700">{updateState.success}</span>}
-          {updateState?.error && <span className="text-xs text-red-700">{updateState.error}</span>}
+          <StatusMessage state={updateState} className="text-xs" />
         </form>
       </td>
       <td className="p-2">
@@ -51,7 +51,7 @@ export function ProductRow({ product }: { product: Product }) {
           >
             {deletePending ? "삭제 중..." : "삭제"}
           </button>
-          {deleteState?.error && <span className="text-xs text-red-700">{deleteState.error}</span>}
+          <StatusMessage state={deleteState} className="text-xs" />
         </form>
       </td>
     </tr>

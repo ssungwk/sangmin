@@ -4,6 +4,7 @@ import { useActionState, useState, useEffect } from "react";
 import { registerPurchase, updatePurchase, deletePurchase } from "@/lib/actions/inventory";
 import { formatSpec } from "@/lib/format";
 import type { Product } from "@/lib/actions/products";
+import { StatusMessage } from "../status-message";
 
 export type PurchaseRow = {
   in_id: number;
@@ -15,17 +16,6 @@ export type PurchaseRow = {
   in_prc: number;
   products: { product_nm: string } | null;
 };
-
-function StatusMessage({
-  state,
-}: {
-  state: { error?: string; success?: string } | undefined;
-}) {
-  if (!state) return null;
-  if (state.error) return <p className="text-sm text-red-700">{state.error}</p>;
-  if (state.success) return <p className="text-sm text-blue-700">{state.success}</p>;
-  return null;
-}
 
 const inputClass =
   "w-full rounded-none border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-800 outline-none focus:border-blue-700 focus:ring-1 focus:ring-blue-700";

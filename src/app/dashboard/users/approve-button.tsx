@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { approveUser } from "@/lib/actions/users";
+import { StatusMessage } from "../status-message";
 
 export function ApproveButton({
   userId,
@@ -26,9 +27,7 @@ export function ApproveButton({
       >
         {pending ? "처리 중..." : "승인"}
       </button>
-      {state?.success && <span className="text-xs text-blue-700">{state.success}</span>}
-      {state?.warning && <span className="text-xs text-amber-700">{state.warning}</span>}
-      {state?.error && <span className="text-xs text-red-700">{state.error}</span>}
+      <StatusMessage state={state} className="text-xs" />
     </form>
   );
 }

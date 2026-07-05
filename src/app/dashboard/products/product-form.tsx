@@ -2,6 +2,7 @@
 
 import { useActionState, useRef, useEffect } from "react";
 import { addProduct } from "@/lib/actions/products";
+import { StatusMessage } from "../status-message";
 
 export function ProductForm() {
   const [state, formAction, pending] = useActionState(addProduct, undefined);
@@ -30,8 +31,7 @@ export function ProductForm() {
       >
         {pending ? "등록 중..." : "제품 등록"}
       </button>
-      {state?.error && <span className="text-sm text-red-700">{state.error}</span>}
-      {state?.success && <span className="text-sm text-blue-700">{state.success}</span>}
+      <StatusMessage state={state} />
     </form>
   );
 }
