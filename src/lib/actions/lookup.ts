@@ -12,6 +12,7 @@ export type NearestPurchase = {
 
 export type NearestSale = {
   order_date: string;
+  out_date: string | null;
   width_mm: number;
   height_mm: number;
   thickness_mm: number | null;

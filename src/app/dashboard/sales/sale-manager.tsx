@@ -253,46 +253,60 @@ export function SaleManager({
             ) : lookup?.error ? (
               <p className="text-red-700">조회 실패: {lookup.error}</p>
             ) : (
-              <div className="space-y-1 text-slate-700">
-                <p>
-                  매입단가:{" "}
-                  {lookup?.purchase ? (
-                    <>
-                      <span className="font-medium">
-                        {Number(lookup.purchase.in_prc).toLocaleString()}원
-                      </span>{" "}
-                      ({lookup.purchase.in_date},{" "}
-                      {formatSpec(
-                        lookup.purchase.width_mm,
-                        lookup.purchase.height_mm,
-                        lookup.purchase.thickness_mm,
-                      )}
-                      )
-                    </>
-                  ) : (
-                    "매입 내역 없음"
-                  )}
-                </p>
-                <p>
-                  매출단가:{" "}
-                  {lookup?.sale ? (
-                    <>
-                      <span className="font-medium">
-                        {Number(lookup.sale.out_prc).toLocaleString()}원
-                      </span>{" "}
-                      ({lookup.sale.order_date},{" "}
-                      {formatSpec(
-                        lookup.sale.width_mm,
-                        lookup.sale.height_mm,
-                        lookup.sale.thickness_mm,
-                      )}
-                      )
-                    </>
-                  ) : (
-                    "매출 내역 없음"
-                  )}
-                </p>
-              </div>
+              <table className="w-full border-collapse text-center">
+                <thead>
+                  <tr>
+                    <th colSpan={3} className="border border-slate-300 bg-slate-100 p-1.5 text-slate-700">
+                      매입정보
+                    </th>
+                    <th colSpan={3} className="border border-slate-300 bg-slate-100 p-1.5 text-slate-700">
+                      매출정보
+                    </th>
+                  </tr>
+                  <tr className="text-slate-600">
+                    <th className="border border-slate-300 p-1.5">매입일자</th>
+                    <th className="border border-slate-300 p-1.5">규격</th>
+                    <th className="border border-slate-300 p-1.5">단가</th>
+                    <th className="border border-slate-300 p-1.5">배송일자</th>
+                    <th className="border border-slate-300 p-1.5">규격</th>
+                    <th className="border border-slate-300 p-1.5">단가</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="text-slate-700">
+                    <td className="border border-slate-300 p-1.5">
+                      {lookup?.purchase?.in_date ?? "-"}
+                    </td>
+                    <td className="border border-slate-300 p-1.5">
+                      {lookup?.purchase
+                        ? formatSpec(
+                            lookup.purchase.width_mm,
+                            lookup.purchase.height_mm,
+                            lookup.purchase.thickness_mm,
+                          )
+                        : "-"}
+                    </td>
+                    <td className="border border-slate-300 p-1.5">
+                      {lookup?.purchase ? Number(lookup.purchase.in_prc).toLocaleString() : "-"}
+                    </td>
+                    <td className="border border-slate-300 p-1.5">
+                      {lookup?.sale?.out_date ?? "-"}
+                    </td>
+                    <td className="border border-slate-300 p-1.5">
+                      {lookup?.sale
+                        ? formatSpec(
+                            lookup.sale.width_mm,
+                            lookup.sale.height_mm,
+                            lookup.sale.thickness_mm,
+                          )
+                        : "-"}
+                    </td>
+                    <td className="border border-slate-300 p-1.5">
+                      {lookup?.sale ? Number(lookup.sale.out_prc).toLocaleString() : "-"}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             )}
           </div>
         )}
