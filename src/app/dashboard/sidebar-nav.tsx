@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const menuItems = [
-  { href: "/dashboard", label: "현황" },
+  { href: "/dashboard/analytics", label: "대시보드" },
+  { href: "/dashboard", label: "매입/매출조회" },
   { href: "/dashboard/purchases", label: "매입등록" },
   { href: "/dashboard/sales", label: "매출등록" },
   { href: "/dashboard/products", label: "제품관리" },

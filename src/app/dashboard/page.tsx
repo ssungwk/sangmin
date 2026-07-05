@@ -38,7 +38,7 @@ export default async function DashboardPage({
   return (
     <div className="space-y-6">
       <h1 className="border-b-2 border-slate-700 pb-2 text-lg font-bold text-slate-800">
-        현황
+        매입/매출조회
       </h1>
 
       <section className="border border-slate-300 bg-white">
