@@ -17,6 +17,7 @@ export type SaleRow = {
   height_mm: number;
   thickness_mm: number | null;
   out_prc: number;
+  note: string | null;
   products: { product_nm: string } | null;
 };
 
@@ -213,6 +214,17 @@ export function SaleManager({
                 />
               </td>
             </tr>
+            <tr>
+              <th className={thClass}>비고</th>
+              <td className={tdClass}>
+                <input
+                  name="note"
+                  placeholder="비고"
+                  defaultValue={selected?.note ?? ""}
+                  className={inputClass}
+                />
+              </td>
+            </tr>
           </tbody>
         </table>
 
@@ -321,7 +333,8 @@ export function SaleManager({
                 <th className="border-r border-slate-200 p-2">현장</th>
                 <th className="border-r border-slate-200 p-2">제품</th>
                 <th className="border-r border-slate-200 p-2">규격</th>
-                <th className="p-2">매출단가</th>
+                <th className="border-r border-slate-200 p-2">매출단가</th>
+                <th className="p-2">비고</th>
               </tr>
             </thead>
             <tbody>
@@ -348,12 +361,15 @@ export function SaleManager({
                   <td className="border-r border-slate-200 p-2">
                     {formatSpec(row.width_mm, row.height_mm, row.thickness_mm)}
                   </td>
-                  <td className="p-2">{Number(row.out_prc).toLocaleString()}</td>
+                  <td className="border-r border-slate-200 p-2">
+                    {Number(row.out_prc).toLocaleString()}
+                  </td>
+                  <td className="p-2">{row.note ?? "-"}</td>
                 </tr>
               ))}
               {sales.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-4 text-center text-slate-400">
+                  <td colSpan={7} className="p-4 text-center text-slate-400">
                     매출 내역이 없습니다.
                   </td>
                 </tr>

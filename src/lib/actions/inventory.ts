@@ -18,6 +18,10 @@ function parseThickness(formData: FormData) {
   return raw ? Number(raw) : null;
 }
 
+function parseNote(formData: FormData) {
+  return (formData.get("note") as string) || null;
+}
+
 export async function registerPurchase(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
   const {
@@ -32,6 +36,7 @@ export async function registerPurchase(_prevState: unknown, formData: FormData) 
     height_mm: Number(formData.get("height_mm")),
     thickness_mm: parseThickness(formData),
     in_prc: Number(formData.get("in_prc")),
+    note: parseNote(formData),
     in_user_id: user.id,
   });
 
@@ -54,6 +59,7 @@ export async function updatePurchase(_prevState: unknown, formData: FormData) {
       height_mm: Number(formData.get("height_mm")),
       thickness_mm: parseThickness(formData),
       in_prc: Number(formData.get("in_prc")),
+      note: parseNote(formData),
     })
     .eq("in_id", inId);
 
@@ -91,6 +97,7 @@ export async function registerSale(_prevState: unknown, formData: FormData) {
     height_mm: Number(formData.get("height_mm")),
     thickness_mm: parseThickness(formData),
     out_prc: Number(formData.get("out_prc")),
+    note: parseNote(formData),
     out_user_id: user.id,
   });
 
@@ -115,6 +122,7 @@ export async function updateSale(_prevState: unknown, formData: FormData) {
       height_mm: Number(formData.get("height_mm")),
       thickness_mm: parseThickness(formData),
       out_prc: Number(formData.get("out_prc")),
+      note: parseNote(formData),
     })
     .eq("out_id", outId);
 
