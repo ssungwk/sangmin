@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { signOut } from "@/lib/actions/auth";
 import { SidebarNav } from "./sidebar-nav";
+import { LogoutButton } from "./logout-button";
 
 export function DashboardShell({
   userLabel,
@@ -42,11 +42,7 @@ export function DashboardShell({
         </div>
         <div className="flex items-center gap-3 text-xs text-slate-200">
           <span className="hidden sm:inline">{userLabel}</span>
-          <form action={signOut}>
-            <button className="rounded-sm border border-slate-500 px-2 py-1 text-slate-100 hover:bg-slate-700">
-              로그아웃
-            </button>
-          </form>
+          <LogoutButton className="rounded-sm border border-slate-500 px-2 py-1 text-slate-100 hover:bg-slate-700" />
         </div>
       </header>
 
