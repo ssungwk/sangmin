@@ -49,7 +49,7 @@ create table if not exists purchases (
   product_id text not null references products(product_id),
   width_mm numeric(10, 2) not null,
   height_mm numeric(10, 2) not null,
-  thickness_mm numeric(10, 2) not null,
+  thickness_mm numeric(10, 2),
   in_prc numeric(12, 2) not null check (in_prc >= 0),
   in_user_id uuid not null references users(user_id),
   created_at timestamptz not null default now()
@@ -64,11 +64,15 @@ create table if not exists sales (
   product_id text not null references products(product_id),
   width_mm numeric(10, 2) not null,
   height_mm numeric(10, 2) not null,
-  thickness_mm numeric(10, 2) not null,
+  thickness_mm numeric(10, 2),
   out_prc numeric(12, 2) not null check (out_prc >= 0),
   out_user_id uuid not null references users(user_id),
   created_at timestamptz not null default now()
 );
+
+-- 이전 버전에서 thickness_mm이 not null이었다면 해제 (가로/세로만 입력하는 등록을 허용)
+alter table purchases alter column thickness_mm drop not null;
+alter table sales alter column thickness_mm drop not null;
 
 -- 이전 버전에서 product_id를 integer(자동증가)로 만든 적이 있다면 text로 안전하게 전환하고,
 -- product_id가 항상 product_nm과 같은 값이 되도록 맞춤.
@@ -183,26 +187,32 @@ create policy "own or admin delete sales" on sales
   for delete to authenticated
   using (out_user_id = auth.uid() or exists (select 1 from users me where me.user_id = auth.uid() and me.admin_yn = '1'));
 
--- 같은 제품 안에서 규격(가로/세로/두께)이 가장 비슷한 매입/매출 1건 조회 (유클리드 거리 기준, 없으면 null)
+-- 같은 제품 안에서 규격(가로/세로, 두께는 입력됐을 때만)이 가장 비슷한 매입/매출 1건 조회
+-- (유클리드 거리 기준, 없으면 null). t가 null이거나 해당 행의 thickness_mm이 null이면
+-- 두께 차이는 거리 계산에서 제외하고 가로/세로만으로 비교함.
 drop function if exists nearest_purchase(numeric, numeric, numeric);
 drop function if exists nearest_purchase(integer, numeric, numeric, numeric);
-create or replace function nearest_purchase(p_product_id text, w numeric, h numeric, t numeric)
+drop function if exists nearest_purchase(text, numeric, numeric, numeric);
+create or replace function nearest_purchase(p_product_id text, w numeric, h numeric, t numeric default null)
 returns purchases as $$
   select *
   from purchases
   where product_id = p_product_id
-  order by power(width_mm - w, 2) + power(height_mm - h, 2) + power(thickness_mm - t, 2) asc
+  order by power(width_mm - w, 2) + power(height_mm - h, 2)
+    + case when t is not null and thickness_mm is not null then power(thickness_mm - t, 2) else 0 end asc
   limit 1;
 $$ language sql stable;
 
 drop function if exists nearest_sale(numeric, numeric, numeric);
 drop function if exists nearest_sale(integer, numeric, numeric, numeric);
-create or replace function nearest_sale(p_product_id text, w numeric, h numeric, t numeric)
+drop function if exists nearest_sale(text, numeric, numeric, numeric);
+create or replace function nearest_sale(p_product_id text, w numeric, h numeric, t numeric default null)
 returns sales as $$
   select *
   from sales
   where product_id = p_product_id
-  order by power(width_mm - w, 2) + power(height_mm - h, 2) + power(thickness_mm - t, 2) asc
+  order by power(width_mm - w, 2) + power(height_mm - h, 2)
+    + case when t is not null and thickness_mm is not null then power(thickness_mm - t, 2) else 0 end asc
   limit 1;
 $$ language sql stable;
 

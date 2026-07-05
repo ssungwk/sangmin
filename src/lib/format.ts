@@ -1,3 +1,3 @@
-export function formatSpec(width: number, height: number, thickness: number) {
-  return `${width}*${height}*${thickness}T`;
+export function formatSpec(width: number, height: number, thickness: number | null) {
+  return thickness == null ? `${width}*${height}` : `${width}*${height}*${thickness}T`;
 }

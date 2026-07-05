@@ -6,7 +6,7 @@ export type NearestPurchase = {
   in_date: string;
   width_mm: number;
   height_mm: number;
-  thickness_mm: number;
+  thickness_mm: number | null;
   in_prc: number;
 };
 
@@ -14,7 +14,7 @@ export type NearestSale = {
   order_date: string;
   width_mm: number;
   height_mm: number;
-  thickness_mm: number;
+  thickness_mm: number | null;
   out_prc: number;
 };
 
@@ -22,7 +22,7 @@ export async function findNearestSpec(
   productId: string,
   width: number,
   height: number,
-  thickness: number,
+  thickness: number | null,
 ) {
   const supabase = await createClient();
 

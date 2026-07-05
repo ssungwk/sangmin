@@ -14,7 +14,7 @@ export type SaleRow = {
   product_id: string;
   width_mm: number;
   height_mm: number;
-  thickness_mm: number;
+  thickness_mm: number | null;
   out_prc: number;
   products: { product_nm: string } | null;
 };
@@ -76,9 +76,8 @@ export function SaleManager({
 
   const w = Number(width);
   const h = Number(height);
-  const t = Number(thickness);
-  const specComplete =
-    productId !== "" && width !== "" && height !== "" && thickness !== "" && w > 0 && h > 0 && t > 0;
+  const t = thickness !== "" ? Number(thickness) : null;
+  const specComplete = productId !== "" && width !== "" && height !== "" && w > 0 && h > 0;
 
   useEffect(() => {
     if (!specComplete) return;
@@ -202,8 +201,7 @@ export function SaleManager({
                     name="thickness_mm"
                     type="number"
                     step="0.01"
-                    placeholder="두께(mm)"
-                    required
+                    placeholder="두께(mm, 선택)"
                     value={thickness}
                     onChange={(e) => setThickness(e.target.value)}
                     className={inputClass}
@@ -345,7 +343,7 @@ export function SaleManager({
                     setProductId(row.product_id);
                     setWidth(row.width_mm.toString());
                     setHeight(row.height_mm.toString());
-                    setThickness(row.thickness_mm.toString());
+                    setThickness(row.thickness_mm?.toString() ?? "");
                   }}
                   className={`cursor-pointer border-b border-slate-200 hover:bg-blue-50 ${
                     selected?.out_id === row.out_id ? "bg-blue-50" : ""

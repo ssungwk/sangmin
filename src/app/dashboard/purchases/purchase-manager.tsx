@@ -11,7 +11,7 @@ export type PurchaseRow = {
   product_id: string;
   width_mm: number;
   height_mm: number;
-  thickness_mm: number;
+  thickness_mm: number | null;
   in_prc: number;
   products: { product_nm: string } | null;
 };
@@ -132,9 +132,8 @@ export function PurchaseManager({
                     name="thickness_mm"
                     type="number"
                     step="0.01"
-                    placeholder="두께(mm)"
-                    required
-                    defaultValue={selected?.thickness_mm}
+                    placeholder="두께(mm, 선택)"
+                    defaultValue={selected?.thickness_mm ?? ""}
                     className={inputClass}
                   />
                 </div>

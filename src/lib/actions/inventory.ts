@@ -13,6 +13,11 @@ function revalidateSalePaths() {
   revalidatePath("/dashboard/sales");
 }
 
+function parseThickness(formData: FormData) {
+  const raw = formData.get("thickness_mm") as string;
+  return raw ? Number(raw) : null;
+}
+
 export async function registerPurchase(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
   const {
@@ -25,7 +30,7 @@ export async function registerPurchase(_prevState: unknown, formData: FormData) 
     product_id: formData.get("product_id") as string,
     width_mm: Number(formData.get("width_mm")),
     height_mm: Number(formData.get("height_mm")),
-    thickness_mm: Number(formData.get("thickness_mm")),
+    thickness_mm: parseThickness(formData),
     in_prc: Number(formData.get("in_prc")),
     in_user_id: user.id,
   });
@@ -47,7 +52,7 @@ export async function updatePurchase(_prevState: unknown, formData: FormData) {
       product_id: formData.get("product_id") as string,
       width_mm: Number(formData.get("width_mm")),
       height_mm: Number(formData.get("height_mm")),
-      thickness_mm: Number(formData.get("thickness_mm")),
+      thickness_mm: parseThickness(formData),
       in_prc: Number(formData.get("in_prc")),
     })
     .eq("in_id", inId);
@@ -84,7 +89,7 @@ export async function registerSale(_prevState: unknown, formData: FormData) {
     product_id: formData.get("product_id") as string,
     width_mm: Number(formData.get("width_mm")),
     height_mm: Number(formData.get("height_mm")),
-    thickness_mm: Number(formData.get("thickness_mm")),
+    thickness_mm: parseThickness(formData),
     out_prc: Number(formData.get("out_prc")),
     out_user_id: user.id,
   });
@@ -108,7 +113,7 @@ export async function updateSale(_prevState: unknown, formData: FormData) {
       product_id: formData.get("product_id") as string,
       width_mm: Number(formData.get("width_mm")),
       height_mm: Number(formData.get("height_mm")),
-      thickness_mm: Number(formData.get("thickness_mm")),
+      thickness_mm: parseThickness(formData),
       out_prc: Number(formData.get("out_prc")),
     })
     .eq("out_id", outId);
