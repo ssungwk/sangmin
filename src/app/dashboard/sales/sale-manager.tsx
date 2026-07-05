@@ -52,8 +52,8 @@ export function SaleManager({
   const [thickness, setThickness] = useState(selected?.thickness_mm?.toString() ?? "");
   const [lookupLoading, setLookupLoading] = useState(false);
   const [lookup, setLookup] = useState<{
-    purchase: NearestPurchase | null;
-    sale: NearestSale | null;
+    purchases: NearestPurchase[];
+    sales: NearestSale[];
     error: string | null;
   } | null>(null);
 
@@ -249,7 +249,7 @@ export function SaleManager({
         {specComplete && (lookupLoading || lookup) && (
           <div className="border-t border-slate-200 bg-slate-50 p-4 text-sm">
             <p className="mb-2 font-medium text-slate-600">
-              참고: 같은 제품 중 입력 규격과 가장 비슷한 이전 내역
+              참고: 같은 제품 중 입력 규격과 가장 비슷한 이전 내역 (최대 5건, 가까운 순)
             </p>
             {lookupLoading ? (
               <p className="text-slate-400">조회 중...</p>
@@ -276,38 +276,38 @@ export function SaleManager({
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="text-slate-700">
-                    <td className="border border-slate-300 p-1.5">
-                      {lookup?.purchase?.in_date ?? "-"}
-                    </td>
-                    <td className="border border-slate-300 p-1.5">
-                      {lookup?.purchase
-                        ? formatSpec(
-                            lookup.purchase.width_mm,
-                            lookup.purchase.height_mm,
-                            lookup.purchase.thickness_mm,
-                          )
-                        : "-"}
-                    </td>
-                    <td className="border border-slate-300 p-1.5">
-                      {lookup?.purchase ? Number(lookup.purchase.in_prc).toLocaleString() : "-"}
-                    </td>
-                    <td className="border border-slate-300 p-1.5">
-                      {lookup?.sale?.out_date ?? "-"}
-                    </td>
-                    <td className="border border-slate-300 p-1.5">
-                      {lookup?.sale
-                        ? formatSpec(
-                            lookup.sale.width_mm,
-                            lookup.sale.height_mm,
-                            lookup.sale.thickness_mm,
-                          )
-                        : "-"}
-                    </td>
-                    <td className="border border-slate-300 p-1.5">
-                      {lookup?.sale ? Number(lookup.sale.out_prc).toLocaleString() : "-"}
-                    </td>
-                  </tr>
+                  {Math.max(lookup?.purchases.length ?? 0, lookup?.sales.length ?? 0) === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="border border-slate-300 p-1.5 text-slate-400">
+                        이전 내역이 없습니다.
+                      </td>
+                    </tr>
+                  ) : (
+                    Array.from({
+                      length: Math.max(lookup?.purchases.length ?? 0, lookup?.sales.length ?? 0),
+                    }).map((_, i) => {
+                      const p = lookup?.purchases[i];
+                      const s = lookup?.sales[i];
+                      return (
+                        <tr key={i} className="text-slate-700">
+                          <td className="border border-slate-300 p-1.5">{p?.in_date ?? "-"}</td>
+                          <td className="border border-slate-300 p-1.5">
+                            {p ? formatSpec(p.width_mm, p.height_mm, p.thickness_mm) : "-"}
+                          </td>
+                          <td className="border border-slate-300 p-1.5">
+                            {p ? Number(p.in_prc).toLocaleString() : "-"}
+                          </td>
+                          <td className="border border-slate-300 p-1.5">{s?.out_date ?? "-"}</td>
+                          <td className="border border-slate-300 p-1.5">
+                            {s ? formatSpec(s.width_mm, s.height_mm, s.thickness_mm) : "-"}
+                          </td>
+                          <td className="border border-slate-300 p-1.5">
+                            {s ? Number(s.out_prc).toLocaleString() : "-"}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             )}
@@ -320,7 +320,7 @@ export function SaleManager({
             disabled={pending}
             onClick={(e) => {
               const outPrc = Number(outPrcRef.current?.value);
-              const inPrc = lookup?.purchase?.in_prc;
+              const inPrc = lookup?.purchases[0]?.in_prc;
               if (inPrc != null && outPrc > 0 && outPrc < inPrc) {
                 const ok = confirm(
                   `매출단가(${outPrc.toLocaleString()}원)가 유사 규격 매입가(${inPrc.toLocaleString()}원)보다 낮습니다. 그래도 저장하시겠습니까?`,

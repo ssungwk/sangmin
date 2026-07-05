@@ -28,16 +28,16 @@ export async function findNearestSpec(
   const supabase = await createClient();
 
   const [purchaseRes, saleRes] = await Promise.all([
-    supabase.rpc("nearest_purchase", { p_product_id: productId, w: width, h: height, t: thickness }),
-    supabase.rpc("nearest_sale", { p_product_id: productId, w: width, h: height, t: thickness }),
+    supabase.rpc("nearest_purchases", { p_product_id: productId, w: width, h: height, t: thickness }),
+    supabase.rpc("nearest_sales", { p_product_id: productId, w: width, h: height, t: thickness }),
   ]);
 
-  if (purchaseRes.error) console.error("nearest_purchase error:", purchaseRes.error);
-  if (saleRes.error) console.error("nearest_sale error:", saleRes.error);
+  if (purchaseRes.error) console.error("nearest_purchases error:", purchaseRes.error);
+  if (saleRes.error) console.error("nearest_sales error:", saleRes.error);
 
   return {
-    purchase: purchaseRes.data as NearestPurchase | null,
-    sale: saleRes.data as NearestSale | null,
+    purchases: (purchaseRes.data as NearestPurchase[] | null) ?? [],
+    sales: (saleRes.data as NearestSale[] | null) ?? [],
     error: purchaseRes.error?.message ?? saleRes.error?.message ?? null,
   };
 }

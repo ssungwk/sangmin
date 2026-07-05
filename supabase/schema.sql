@@ -197,33 +197,33 @@ create policy "own or admin delete sales" on sales
   for delete to authenticated
   using (out_user_id = auth.uid() or exists (select 1 from users me where me.user_id = auth.uid() and me.admin_yn = '1'));
 
--- 같은 제품 안에서 규격(가로/세로, 두께는 입력됐을 때만)이 가장 비슷한 매입/매출 1건 조회
--- (유클리드 거리 기준, 없으면 null). t가 null이거나 해당 행의 thickness_mm이 null이면
+-- 같은 제품 안에서 규격(가로/세로, 두께는 입력됐을 때만)이 가장 비슷한 매입/매출 최대 5건 조회
+-- (유클리드 거리 기준, 가까운 순). t가 null이거나 해당 행의 thickness_mm이 null이면
 -- 두께 차이는 거리 계산에서 제외하고 가로/세로만으로 비교함.
 drop function if exists nearest_purchase(numeric, numeric, numeric);
 drop function if exists nearest_purchase(integer, numeric, numeric, numeric);
 drop function if exists nearest_purchase(text, numeric, numeric, numeric);
-create or replace function nearest_purchase(p_product_id text, w numeric, h numeric, t numeric default null)
-returns purchases as $$
+create or replace function nearest_purchases(p_product_id text, w numeric, h numeric, t numeric default null)
+returns setof purchases as $$
   select *
   from purchases
   where product_id = p_product_id
   order by power(width_mm - w, 2) + power(height_mm - h, 2)
     + case when t is not null and thickness_mm is not null then power(thickness_mm - t, 2) else 0 end asc
-  limit 1;
+  limit 5;
 $$ language sql stable;
 
 drop function if exists nearest_sale(numeric, numeric, numeric);
 drop function if exists nearest_sale(integer, numeric, numeric, numeric);
 drop function if exists nearest_sale(text, numeric, numeric, numeric);
-create or replace function nearest_sale(p_product_id text, w numeric, h numeric, t numeric default null)
-returns sales as $$
+create or replace function nearest_sales(p_product_id text, w numeric, h numeric, t numeric default null)
+returns setof sales as $$
   select *
   from sales
   where product_id = p_product_id
   order by power(width_mm - w, 2) + power(height_mm - h, 2)
     + case when t is not null and thickness_mm is not null then power(thickness_mm - t, 2) else 0 end asc
-  limit 1;
+  limit 5;
 $$ language sql stable;
 
 -- 사용자관리 화면용: 이메일(auth.users)까지 합쳐서 전체 사용자 목록 조회.
