@@ -1,5 +1,6 @@
 import { listProducts } from "@/lib/actions/products";
 import { ProductForm } from "./product-form";
+import { ProductRow } from "./product-row";
 
 export default async function ProductsPage() {
   const { products, error } = await listProducts();
@@ -22,18 +23,20 @@ export default async function ProductsPage() {
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-slate-300 bg-slate-50 text-left text-slate-600">
-                <th className="p-2">제품명</th>
+                <th className="border-r border-slate-200 p-2">제품ID</th>
+                <th className="border-r border-slate-200 p-2">제품명 / 정렬순서</th>
+                <th className="p-2">삭제</th>
               </tr>
             </thead>
             <tbody>
               {products.map((p) => (
-                <tr key={p.product_id} className="border-b border-slate-200">
-                  <td className="p-2">{p.product_nm}</td>
-                </tr>
+                <ProductRow key={p.product_id} product={p} />
               ))}
               {products.length === 0 && (
                 <tr>
-                  <td className="p-4 text-center text-slate-400">등록된 제품이 없습니다.</td>
+                  <td colSpan={3} className="p-4 text-center text-slate-400">
+                    등록된 제품이 없습니다.
+                  </td>
                 </tr>
               )}
             </tbody>
