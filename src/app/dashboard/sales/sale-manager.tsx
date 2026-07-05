@@ -53,6 +53,7 @@ export function SaleManager({
   const [lookup, setLookup] = useState<{
     purchase: NearestPurchase | null;
     sale: NearestSale | null;
+    error: string | null;
   } | null>(null);
 
   useEffect(() => {
@@ -203,32 +204,29 @@ export function SaleManager({
               </td>
             </tr>
             <tr>
-              <th className={thClass}>매출개수</th>
+              <th className={thClass}>개수/단가</th>
               <td className={tdClass}>
-                <input
-                  name="out_qty"
-                  type="number"
-                  min={1}
-                  step={1}
-                  placeholder="개수"
-                  required
-                  defaultValue={selected?.out_qty ?? 1}
-                  className={inputClass}
-                />
-              </td>
-            </tr>
-            <tr>
-              <th className={thClass}>매출단가</th>
-              <td className={tdClass}>
-                <input
-                  name="out_prc"
-                  type="number"
-                  step="0.01"
-                  placeholder="원"
-                  required
-                  defaultValue={selected?.out_prc}
-                  className={inputClass}
-                />
+                <div className="flex gap-2">
+                  <input
+                    name="out_qty"
+                    type="number"
+                    min={1}
+                    step={1}
+                    placeholder="개수"
+                    required
+                    defaultValue={selected?.out_qty ?? 1}
+                    className={inputClass}
+                  />
+                  <input
+                    name="out_prc"
+                    type="number"
+                    step="0.01"
+                    placeholder="매출단가(원)"
+                    required
+                    defaultValue={selected?.out_prc}
+                    className={inputClass}
+                  />
+                </div>
               </td>
             </tr>
             <tr>
@@ -252,6 +250,8 @@ export function SaleManager({
             </p>
             {lookupLoading ? (
               <p className="text-slate-400">조회 중...</p>
+            ) : lookup?.error ? (
+              <p className="text-red-700">조회 실패: {lookup.error}</p>
             ) : (
               <div className="space-y-1 text-slate-700">
                 <p>

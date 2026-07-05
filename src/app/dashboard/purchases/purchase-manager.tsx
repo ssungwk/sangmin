@@ -133,32 +133,29 @@ export function PurchaseManager({
               </td>
             </tr>
             <tr>
-              <th className={thClass}>매입개수</th>
+              <th className={thClass}>개수/단가</th>
               <td className={tdClass}>
-                <input
-                  name="in_qty"
-                  type="number"
-                  min={1}
-                  step={1}
-                  placeholder="개수"
-                  required
-                  defaultValue={selected?.in_qty ?? 1}
-                  className={inputClass}
-                />
-              </td>
-            </tr>
-            <tr>
-              <th className={thClass}>매입단가</th>
-              <td className={tdClass}>
-                <input
-                  name="in_prc"
-                  type="number"
-                  step="0.01"
-                  placeholder="원"
-                  required
-                  defaultValue={selected?.in_prc}
-                  className={inputClass}
-                />
+                <div className="flex gap-2">
+                  <input
+                    name="in_qty"
+                    type="number"
+                    min={1}
+                    step={1}
+                    placeholder="개수"
+                    required
+                    defaultValue={selected?.in_qty ?? 1}
+                    className={inputClass}
+                  />
+                  <input
+                    name="in_prc"
+                    type="number"
+                    step="0.01"
+                    placeholder="매입단가(원)"
+                    required
+                    defaultValue={selected?.in_prc}
+                    className={inputClass}
+                  />
+                </div>
               </td>
             </tr>
             <tr>
