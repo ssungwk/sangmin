@@ -6,6 +6,7 @@ import { findNearestSpec, type NearestPurchase, type NearestSale } from "@/lib/a
 import { formatSpec } from "@/lib/format";
 import type { Product } from "@/lib/actions/products";
 import { StatusMessage } from "../status-message";
+import { AutoGrowTextarea } from "../auto-grow-textarea";
 
 export type SaleRow = {
   out_id: number;
@@ -217,10 +218,10 @@ export function SaleManager({
             <tr>
               <th className={thClass}>비고</th>
               <td className={tdClass}>
-                <input
+                <AutoGrowTextarea
                   name="note"
                   placeholder="비고"
-                  defaultValue={selected?.note ?? ""}
+                  defaultValue={selected?.note}
                   className={inputClass}
                 />
               </td>
@@ -364,7 +365,7 @@ export function SaleManager({
                   <td className="border-r border-slate-200 p-2">
                     {Number(row.out_prc).toLocaleString()}
                   </td>
-                  <td className="p-2">{row.note ?? "-"}</td>
+                  <td className="whitespace-pre-wrap p-2">{row.note ?? "-"}</td>
                 </tr>
               ))}
               {sales.length === 0 && (

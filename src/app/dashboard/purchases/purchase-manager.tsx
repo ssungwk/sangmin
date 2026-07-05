@@ -5,6 +5,7 @@ import { registerPurchase, updatePurchase, deletePurchase } from "@/lib/actions/
 import { formatSpec } from "@/lib/format";
 import type { Product } from "@/lib/actions/products";
 import { StatusMessage } from "../status-message";
+import { AutoGrowTextarea } from "../auto-grow-textarea";
 
 export type PurchaseRow = {
   in_id: number;
@@ -147,10 +148,10 @@ export function PurchaseManager({
             <tr>
               <th className={thClass}>비고</th>
               <td className={tdClass}>
-                <input
+                <AutoGrowTextarea
                   name="note"
                   placeholder="비고"
-                  defaultValue={selected?.note ?? ""}
+                  defaultValue={selected?.note}
                   className={inputClass}
                 />
               </td>
@@ -225,7 +226,7 @@ export function PurchaseManager({
                   <td className="border-r border-slate-200 p-2">
                     {Number(row.in_prc).toLocaleString()}
                   </td>
-                  <td className="p-2">{row.note ?? "-"}</td>
+                  <td className="whitespace-pre-wrap p-2">{row.note ?? "-"}</td>
                 </tr>
               ))}
               {purchases.length === 0 && (

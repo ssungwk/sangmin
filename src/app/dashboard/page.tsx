@@ -51,7 +51,7 @@ export default async function DashboardPage() {
                   <td className="border-r border-slate-200 p-2">
                     {Number(row.in_prc).toLocaleString()}
                   </td>
-                  <td className="p-2">{row.note ?? "-"}</td>
+                  <td className="whitespace-pre-wrap p-2">{row.note ?? "-"}</td>
                 </tr>
               ))}
               {(purchases ?? []).length === 0 && (
@@ -98,7 +98,7 @@ export default async function DashboardPage() {
                   <td className="border-r border-slate-200 p-2">
                     {Number(row.out_prc).toLocaleString()}
                   </td>
-                  <td className="p-2">{row.note ?? "-"}</td>
+                  <td className="whitespace-pre-wrap p-2">{row.note ?? "-"}</td>
                 </tr>
               ))}
               {(sales ?? []).length === 0 && (
