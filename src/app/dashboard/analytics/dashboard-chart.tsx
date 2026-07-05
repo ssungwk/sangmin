@@ -120,7 +120,7 @@ export function DashboardChart({
             />
             <Line
               yAxisId="margin"
-              type="monotone"
+              type="linear"
               dataKey="마진율"
               stroke={COLORS.margin}
               strokeWidth={2}
