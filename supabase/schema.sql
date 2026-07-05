@@ -50,6 +50,7 @@ create table if not exists purchases (
   width_mm numeric(10, 2) not null,
   height_mm numeric(10, 2) not null,
   thickness_mm numeric(10, 2),
+  in_qty integer not null default 1 check (in_qty > 0),
   in_prc numeric(12, 2) not null check (in_prc >= 0),
   note text,
   in_user_id uuid not null references users(user_id),
@@ -57,6 +58,7 @@ create table if not exists purchases (
 );
 
 alter table purchases add column if not exists note text;
+alter table purchases add column if not exists in_qty integer not null default 1 check (in_qty > 0);
 
 -- 매출 (등록자 본인 또는 관리자가 수정/삭제 가능)
 create table if not exists sales (
@@ -68,6 +70,7 @@ create table if not exists sales (
   width_mm numeric(10, 2) not null,
   height_mm numeric(10, 2) not null,
   thickness_mm numeric(10, 2),
+  out_qty integer not null default 1 check (out_qty > 0),
   out_prc numeric(12, 2) not null check (out_prc >= 0),
   note text,
   out_user_id uuid not null references users(user_id),
@@ -75,6 +78,7 @@ create table if not exists sales (
 );
 
 alter table sales add column if not exists note text;
+alter table sales add column if not exists out_qty integer not null default 1 check (out_qty > 0);
 
 -- 이전 버전에서 thickness_mm이 not null이었다면 해제 (가로/세로만 입력하는 등록을 허용)
 alter table purchases alter column thickness_mm drop not null;

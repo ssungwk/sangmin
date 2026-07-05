@@ -35,6 +35,7 @@ export async function registerPurchase(_prevState: unknown, formData: FormData) 
     width_mm: Number(formData.get("width_mm")),
     height_mm: Number(formData.get("height_mm")),
     thickness_mm: parseThickness(formData),
+    in_qty: Number(formData.get("in_qty")) || 1,
     in_prc: Number(formData.get("in_prc")),
     note: parseNote(formData),
     in_user_id: user.id,
@@ -58,6 +59,7 @@ export async function updatePurchase(_prevState: unknown, formData: FormData) {
       width_mm: Number(formData.get("width_mm")),
       height_mm: Number(formData.get("height_mm")),
       thickness_mm: parseThickness(formData),
+      in_qty: Number(formData.get("in_qty")) || 1,
       in_prc: Number(formData.get("in_prc")),
       note: parseNote(formData),
     })
@@ -96,6 +98,7 @@ export async function registerSale(_prevState: unknown, formData: FormData) {
     width_mm: Number(formData.get("width_mm")),
     height_mm: Number(formData.get("height_mm")),
     thickness_mm: parseThickness(formData),
+    out_qty: Number(formData.get("out_qty")) || 1,
     out_prc: Number(formData.get("out_prc")),
     note: parseNote(formData),
     out_user_id: user.id,
@@ -121,6 +124,7 @@ export async function updateSale(_prevState: unknown, formData: FormData) {
       width_mm: Number(formData.get("width_mm")),
       height_mm: Number(formData.get("height_mm")),
       thickness_mm: parseThickness(formData),
+      out_qty: Number(formData.get("out_qty")) || 1,
       out_prc: Number(formData.get("out_prc")),
       note: parseNote(formData),
     })

@@ -34,6 +34,7 @@ export default async function DashboardPage() {
                 <th className="border-r border-slate-200 p-2">매입일자</th>
                 <th className="border-r border-slate-200 p-2">제품</th>
                 <th className="border-r border-slate-200 p-2">규격</th>
+                <th className="border-r border-slate-200 p-2">매입개수</th>
                 <th className="border-r border-slate-200 p-2">매입단가</th>
                 <th className="p-2">비고</th>
               </tr>
@@ -48,6 +49,7 @@ export default async function DashboardPage() {
                   <td className="border-r border-slate-200 p-2">
                     {formatSpec(row.width_mm, row.height_mm, row.thickness_mm)}
                   </td>
+                  <td className="border-r border-slate-200 p-2">{row.in_qty}</td>
                   <td className="border-r border-slate-200 p-2">
                     {Number(row.in_prc).toLocaleString()}
                   </td>
@@ -56,7 +58,7 @@ export default async function DashboardPage() {
               ))}
               {(purchases ?? []).length === 0 && (
                 <tr>
-                  <td colSpan={5} className="p-4 text-center text-slate-400">
+                  <td colSpan={6} className="p-4 text-center text-slate-400">
                     매입 내역이 없습니다.
                   </td>
                 </tr>
@@ -79,6 +81,7 @@ export default async function DashboardPage() {
                 <th className="border-r border-slate-200 p-2">현장</th>
                 <th className="border-r border-slate-200 p-2">제품</th>
                 <th className="border-r border-slate-200 p-2">규격</th>
+                <th className="border-r border-slate-200 p-2">매출개수</th>
                 <th className="border-r border-slate-200 p-2">매출단가</th>
                 <th className="p-2">비고</th>
               </tr>
@@ -95,6 +98,7 @@ export default async function DashboardPage() {
                   <td className="border-r border-slate-200 p-2">
                     {formatSpec(row.width_mm, row.height_mm, row.thickness_mm)}
                   </td>
+                  <td className="border-r border-slate-200 p-2">{row.out_qty}</td>
                   <td className="border-r border-slate-200 p-2">
                     {Number(row.out_prc).toLocaleString()}
                   </td>
@@ -103,7 +107,7 @@ export default async function DashboardPage() {
               ))}
               {(sales ?? []).length === 0 && (
                 <tr>
-                  <td colSpan={7} className="p-4 text-center text-slate-400">
+                  <td colSpan={8} className="p-4 text-center text-slate-400">
                     매출 내역이 없습니다.
                   </td>
                 </tr>
